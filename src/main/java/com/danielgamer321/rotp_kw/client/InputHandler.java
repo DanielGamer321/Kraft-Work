@@ -1,6 +1,7 @@
 package com.danielgamer321.rotp_kw.client;
 
 import com.danielgamer321.rotp_kw.init.InitEffects;
+import com.github.standobyte.jojo.capability.entity.power.StandCapProvider;
 import com.github.standobyte.jojo.client.ControllerStand;
 
 import com.github.standobyte.jojo.client.ui.actionshud.ActionsOverlayGui;
@@ -132,12 +133,14 @@ public class InputHandler {
     private boolean ItemButtonsLocked = false;
     private InputMappings.Input swapKey;
     private InputMappings.Input dropKey;
+    private InputMappings.Input nonStandModeKey;
 
     public void ItemButtonsLockedTick() {
         if (!ItemButtonsLocked) {
             helpKey = mc.options.keySpectatorOutlines.getDefaultKey();
             swapKey = mc.options.keySwapOffhand.getKey();
             dropKey = mc.options.keyDrop.getKey();
+            nonStandModeKey = com.github.standobyte.jojo.client.InputHandler.getInstance().nonStandMode.getKey();
             ItemButtonsLocked = true;
         }
 
@@ -145,6 +148,7 @@ public class InputHandler {
             if (mc.player.hasEffect(InitEffects.LOCKED_MAIN_HAND.get())) {
                 mc.options.keyDrop.setKey(helpKey);
             }
+            com.github.standobyte.jojo.client.InputHandler.getInstance().nonStandMode.setKey(helpKey);
             mc.options.keySwapOffhand.setKey(helpKey);
             KeyBinding.resetMapping();
         }
@@ -154,6 +158,7 @@ public class InputHandler {
         if (ItemButtonsLocked) {
             mc.options.keySwapOffhand.setKey(swapKey);
             mc.options.keyDrop.setKey(dropKey);
+            com.github.standobyte.jojo.client.InputHandler.getInstance().nonStandMode.setKey(nonStandModeKey);
             ItemButtonsLocked = false;
             KeyBinding.resetMapping();
         }
@@ -186,6 +191,14 @@ public class InputHandler {
     private void tickEffects() {
         if (mc.player != null && InitEffects.lockedArms(mc.player)) {
             ActionsOverlayGui overlay = ActionsOverlayGui.getInstance();
+            if (IPower.PowerClassification.NON_STAND == overlay.getCurrentMode()) {
+                if (mc.player.getCapability(StandCapProvider.STAND_CAP).map(cap -> cap.hasPower()).orElse(false)) {
+                    overlay.setMode(IPower.PowerClassification.STAND);
+                }
+                else {
+                    overlay.setMode(null);
+                }
+            }
             if (!isControllingStand() || IPower.PowerClassification.STAND != overlay.getCurrentMode()) {
                 mouseButtonsLockedTick();
             }
