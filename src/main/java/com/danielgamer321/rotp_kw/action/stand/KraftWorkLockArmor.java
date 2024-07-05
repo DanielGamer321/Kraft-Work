@@ -109,52 +109,52 @@ public class KraftWorkLockArmor extends KWActionModifier {
                             float damageDealt = punch.getType() == ActionTarget.TargetType.ENTITY ? ((StandEntityPunch) punch).getDamageDealtToLiving() : 0;
                             if (targetEntity.getUseItem().isShield(targetEntity) && damageDealt == 0) {
                                 if (main.getItem() instanceof ShieldItem) {
-                                    targetEntity.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 3, 0, false, false, true));
+                                    targetEntity.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 19999980, 0, false, false, true));
                                     stand.consumeStamina(5);
                                 }
                                 else if (off.getItem() instanceof ShieldItem) {
-                                    targetEntity.addEffect(new EffectInstance(InitEffects.LOCKED_OFF_HAND.get(), 3, 0, false, false, true));
+                                    targetEntity.addEffect(new EffectInstance(InitEffects.LOCKED_OFF_HAND.get(), 19999980, 0, false, false, true));
                                     stand.consumeStamina(5);
                                 }
                             }
                             else {
                                 if (!helmet.isEmpty()) {
                                     binding(user, false, helmet);
-                                    targetEntity.addEffect(new EffectInstance(InitEffects.LOCKED_HELMET.get(), 3, 0, false, false, true));
+                                    targetEntity.addEffect(new EffectInstance(InitEffects.LOCKED_HELMET.get(), 19999980, 0, false, false, true));
                                     stand.consumeStamina(5);
                                 }
                                 if (!chestplace.isEmpty()) {
                                     if (targetEntity instanceof AbstractHorseEntity) {
-                                        targetEntity.addEffect(new EffectInstance(InitEffects.FULL_TRANSPORT_LOCKED.get(), 3, 0, false, false, true));
+                                        targetEntity.addEffect(new EffectInstance(InitEffects.FULL_TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
                                         stand.consumeStamina(5);
                                     }
                                     else {
                                         binding(user, false, chestplace);
-                                        targetEntity.addEffect(new EffectInstance(InitEffects.LOCKED_CHESTPLATE.get(), 3, 0, false, false, true));
+                                        targetEntity.addEffect(new EffectInstance(InitEffects.LOCKED_CHESTPLATE.get(), 19999980, 0, false, false, true));
                                         stand.consumeStamina(5);
                                     }
                                 }
                                 if (!leggings.isEmpty()) {
                                     binding(user, false, leggings);
-                                    targetEntity.addEffect(new EffectInstance(InitEffects.LOCKED_LEGGINGS.get(), 3, 0, false, false, true));
+                                    targetEntity.addEffect(new EffectInstance(InitEffects.LOCKED_LEGGINGS.get(), 19999980, 0, false, false, true));
                                     stand.consumeStamina(5);
                                 }
                                 if (!boots.isEmpty()) {
                                     binding(user, false, boots);
-                                    targetEntity.addEffect(new EffectInstance(InitEffects.LOCKED_POSITION.get(), 3, 0, false, false, true));
+                                    targetEntity.addEffect(new EffectInstance(InitEffects.LOCKED_POSITION.get(), 19999980, 0, false, false, true));
                                     stand.consumeStamina(5);
                                 }
                                 if (targetEntity instanceof RavagerEntity ||
                                         targetEntity instanceof PigEntity && ((PigEntity)targetEntity).isSaddled() ||
                                         targetEntity instanceof AbstractChestedHorseEntity && ((AbstractChestedHorseEntity)targetEntity).hasChest()) {
-                                    targetEntity.addEffect(new EffectInstance(InitEffects.TRANSPORT_LOCKED.get(), 3, 0, false, false, true));
+                                    targetEntity.addEffect(new EffectInstance(InitEffects.TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
                                     stand.consumeStamina(5);
                                 }
                                 if (targetEntity instanceof StriderEntity && ((StriderEntity)targetEntity).isSaddled() ||
                                         targetEntity instanceof AbstractHorseEntity && ((AbstractHorseEntity)targetEntity).isSaddled() ||
                                         targetEntity instanceof LlamaEntity && ((LlamaEntity)targetEntity).getSwag() != null ||
                                         targetEntity instanceof TraderLlamaEntity) {
-                                    targetEntity.addEffect(new EffectInstance(InitEffects.FULL_TRANSPORT_LOCKED.get(), 3, 0, false, false, true));
+                                    targetEntity.addEffect(new EffectInstance(InitEffects.FULL_TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
                                     stand.consumeStamina(5);
                                 }
                             }

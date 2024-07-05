@@ -2,6 +2,7 @@ package com.danielgamer321.rotp_kw.util;
 
 import com.danielgamer321.rotp_kw.RotpKraftWorkAddon;
 import com.danielgamer321.rotp_kw.capability.entity.EntityUtilCapProvider;
+import com.danielgamer321.rotp_kw.capability.entity.ProjectileUtilCapProvider;
 import com.danielgamer321.rotp_kw.entity.KWBlockEntity;
 import com.danielgamer321.rotp_kw.entity.damaging.projectile.KWItemEntity;
 import com.danielgamer321.rotp_kw.init.AddonStands;
@@ -11,13 +12,19 @@ import com.danielgamer321.rotp_kw.power.impl.stand.type.KraftWorkStandType;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.power.impl.stand.type.EntityStandType;
 
+import com.github.standobyte.jojo.util.mc.MCUtil;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.item.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.entity.projectile.FireworkRocketEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.play.server.SPlayEntityEffectPacket;
 import net.minecraft.network.play.server.SRemoveEntityEffectPacket;
@@ -48,6 +55,8 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import java.util.List;
 import java.util.Map;
 
+import static com.danielgamer321.rotp_kw.action.stand.KraftWorkLockYourself.binding;
+
 @EventBusSubscriber(modid = RotpKraftWorkAddon.MOD_ID)
 public class GameplayEventHandler {
 
@@ -59,6 +68,12 @@ public class GameplayEventHandler {
             if (InitEffects.isLocked(player)) {
                 player.setSprinting(false);
             }
+            IStandPower.getStandPowerOptional(player).ifPresent(power -> {
+                if (IStandPower.getStandPowerOptional(player).map(stand -> !stand.hasPower() ||
+                        stand.getType() != AddonStands.KRAFT_WORK.getStandType()).orElse(false)) {
+                    releaseFromLock(player);
+                }
+            });
             break;
         }
     }
@@ -153,8 +168,70 @@ public class GameplayEventHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void handleProjectileTotem(LivingDeathEvent event) {
+    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        PlayerEntity player = event.getPlayer();
+        if (player instanceof ServerPlayerEntity) {
+            releaseFromLock((ServerPlayerEntity)player);
+        }
+    }
+
+    private static void releaseFromLock(LivingEntity user) {
+        String lock_id = String.valueOf(user.getUUID());
+        MCUtil.getAllEntities(user.level).forEach(entity -> {
+            if (entity.getTags().contains(lock_id)) {
+                boolean positionLocking = entity.getCapability(EntityUtilCapProvider.CAPABILITY).map(cap -> cap.getPositionLocking()).orElse(false);
+                if (positionLocking) {
+                    if (entity instanceof LivingEntity && !(entity instanceof ArmorStandEntity)) {
+                        LivingEntity lockedEntity = (LivingEntity) entity;
+                        ItemStack helmet = lockedEntity.getItemBySlot(EquipmentSlotType.HEAD);
+                        ItemStack chestplace = lockedEntity.getItemBySlot(EquipmentSlotType.CHEST);
+                        ItemStack leggings = lockedEntity.getItemBySlot(EquipmentSlotType.LEGS);
+                        ItemStack boots = lockedEntity.getItemBySlot(EquipmentSlotType.FEET);
+                        lockedEntity.removeEffect(InitEffects.LOCKED_MAIN_HAND.get());
+                        lockedEntity.removeEffect(InitEffects.LOCKED_OFF_HAND.get());
+                        binding(user, true, helmet);
+                        lockedEntity.removeEffect(InitEffects.LOCKED_HELMET.get());
+                        binding(user, true, chestplace);
+                        lockedEntity.removeEffect(InitEffects.LOCKED_CHESTPLATE.get());
+                        binding(user, true, leggings);
+                        lockedEntity.removeEffect(InitEffects.LOCKED_LEGGINGS.get());
+                        binding(user, true, boots);
+                        lockedEntity.removeEffect(InitEffects.LOCKED_POSITION.get());
+                        lockedEntity.removeEffect(InitEffects.TRANSPORT_LOCKED.get());
+                        lockedEntity.removeEffect(InitEffects.FULL_TRANSPORT_LOCKED.get());
+                        KraftWorkStandType.setPositionLockingServerSide(entity, false);
+                        KraftWorkStandType.TagServerSide(lockedEntity, lock_id, false);
+                    }
+                    else if (entity instanceof ProjectileEntity) {
+                        ProjectileEntity projectile = (ProjectileEntity) entity;
+                        int kineticEnergy = projectile.getCapability(ProjectileUtilCapProvider.CAPABILITY).map(cap -> cap.getKineticEnergy()).orElse(0);
+                        Vector3d velocity = projectile instanceof FireworkRocketEntity ?
+                                projectile.getDeltaMovement().normalize().add(user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)3.15F + (0.143F * kineticEnergy)) :
+                                projectile.getDeltaMovement().normalize().add(user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)0.143F * kineticEnergy);
+                        KraftWorkStandType.ReleaseProjectile(user, projectile, kineticEnergy, velocity);
+                        projectile.setNoGravity(false);
+                    }
+                    else {
+                        KraftWorkStandType.setPositionLockingServerSide(entity, false);
+                        KraftWorkStandType.setCanUpdateServerSide(entity, true);
+                        entity.setNoGravity(false);
+                        KraftWorkStandType.TagServerSide(entity, lock_id, false);
+                    }
+                }
+            }
+        });
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void handleDeath(LivingDeathEvent event) {
         if (!event.getEntity().level.isClientSide()) {
+            LivingEntity dead = event.getEntityLiving();;
+            IStandPower.getStandPowerOptional(dead).ifPresent(power -> {
+                if (IStandPower.getStandPowerOptional(dead).map(stand -> stand.hasPower() &&
+                        stand.getType() == AddonStands.KRAFT_WORK.getStandType()).orElse(false)) {
+                    releaseFromLock(dead);
+                }
+            });
             projectileTotem(event);
         }
     }
@@ -201,7 +278,7 @@ public class GameplayEventHandler {
                         if (entity instanceof LivingEntity && ((LivingEntity) entity).getMainHandItem().getItem() instanceof Item) {
                             String lock_id = String.valueOf(target.getUUID());
                             LivingEntity living = (LivingEntity) entity;
-                            living.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 3, 0, false, false, true));
+                            living.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 19999980, 0, false, false, true));
                             KraftWorkStandType.setPositionLockingServerSide(entity, true);
                             KraftWorkStandType.TagServerSide(entity, lock_id, true);
                         }

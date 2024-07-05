@@ -1,7 +1,7 @@
 package com.danielgamer321.rotp_kw.power.impl.stand.type;
 
 import com.danielgamer321.rotp_kw.capability.entity.EntityUtilCapProvider;
-import com.danielgamer321.rotp_kw.capability.entity.PlayerUtilCapProvider;
+import com.danielgamer321.rotp_kw.capability.entity.LivingUtilCapProvider;
 import com.danielgamer321.rotp_kw.capability.entity.ProjectileUtilCapProvider;
 import com.danielgamer321.rotp_kw.entity.damaging.projectile.KWItemEntity;
 import com.danielgamer321.rotp_kw.init.InitEffects;
@@ -24,7 +24,6 @@ import com.github.standobyte.jojo.util.mc.MCUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ArmorStandEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.*;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
@@ -64,33 +63,7 @@ public class KraftWorkStandType<T extends StandStats> extends EntityStandType<T>
                     boolean positionLocking = entity.getCapability(EntityUtilCapProvider.CAPABILITY).map(cap -> cap.getPositionLocking()).orElse(false);
                     if (entity instanceof LivingEntity && !(entity instanceof ArmorStandEntity)) {
                         LivingEntity lockedEntity = (LivingEntity) entity;
-                        if (positionLocking && distance <= 140 && user.isAlive() && lockedEntity.isAlive() && InitEffects.isLocked(lockedEntity)) {
-                            if (lockedEntity.hasEffect(InitEffects.LOCKED_MAIN_HAND.get())) {
-                                lockedEntity.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 10, 0, false, false, true));
-                            }
-                            if (lockedEntity.hasEffect(InitEffects.LOCKED_OFF_HAND.get())) {
-                                lockedEntity.addEffect(new EffectInstance(InitEffects.LOCKED_OFF_HAND.get(), 10, 0, false, false, true));
-                            }
-                            if (lockedEntity.hasEffect(InitEffects.LOCKED_HELMET.get())) {
-                                lockedEntity.addEffect(new EffectInstance(InitEffects.LOCKED_HELMET.get(), 10, 0, false, false, true));
-                            }
-                            if (lockedEntity.hasEffect(InitEffects.LOCKED_CHESTPLATE.get())) {
-                                lockedEntity.addEffect(new EffectInstance(InitEffects.LOCKED_CHESTPLATE.get(), 10, 0, false, false, true));
-                            }
-                            if (lockedEntity.hasEffect(InitEffects.LOCKED_LEGGINGS.get())) {
-                                lockedEntity.addEffect(new EffectInstance(InitEffects.LOCKED_LEGGINGS.get(), 10, 0, false, false, true));
-                            }
-                            if (lockedEntity.hasEffect(InitEffects.LOCKED_POSITION.get())) {
-                                lockedEntity.addEffect(new EffectInstance(InitEffects.LOCKED_POSITION.get(), 10, 0, false, false, true));
-                            }
-                            if (lockedEntity.hasEffect(InitEffects.TRANSPORT_LOCKED.get())) {
-                                lockedEntity.addEffect(new EffectInstance(InitEffects.TRANSPORT_LOCKED.get(), 10, 0, false, false, true));
-                            }
-                            if (lockedEntity.hasEffect(InitEffects.FULL_TRANSPORT_LOCKED.get())) {
-                                lockedEntity.addEffect(new EffectInstance(InitEffects.FULL_TRANSPORT_LOCKED.get(), 10, 0, false, false, true));
-                            }
-                        }
-                        else {
+                        if (!positionLocking || distance > 140 || !lockedEntity.isAlive() || !InitEffects.isLocked(lockedEntity)) {
                             ItemStack helmet = lockedEntity.getItemBySlot(EquipmentSlotType.HEAD);
                             ItemStack chestplace = lockedEntity.getItemBySlot(EquipmentSlotType.CHEST);
                             ItemStack leggings = lockedEntity.getItemBySlot(EquipmentSlotType.LEGS);
@@ -118,7 +91,7 @@ public class KraftWorkStandType<T extends StandStats> extends EntityStandType<T>
                         Vector3d velocity = projectile instanceof FireworkRocketEntity ?
                                 projectile.getDeltaMovement().normalize().add(user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)3.15F + (0.143F * kineticEnergy)) :
                                 projectile.getDeltaMovement().normalize().add(user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)0.143F * kineticEnergy);
-                        if (positionLocking && distance <= 140 && user.isAlive()) {
+                        if (positionLocking && distance <= 140) {
                             if (projectile.canUpdate()) {
                                 setCanUpdateServerSide(projectile, false);
                             }
@@ -137,7 +110,7 @@ public class KraftWorkStandType<T extends StandStats> extends EntityStandType<T>
                         }
                     }
                     else {
-                        if (positionLocking && distance <= 140 && user.isAlive()) {
+                        if (positionLocking && distance <= 140) {
                             entity.fallDistance = 0.0F;
                             setCanUpdateServerSide(entity, false);
                             entity.setNoGravity(true);
@@ -178,18 +151,18 @@ public class KraftWorkStandType<T extends StandStats> extends EntityStandType<T>
     }
 
     public static void TagServerSide(Entity target, String id, boolean purpose) {
+        if (purpose) {
+            target.addTag(id);
+        }
+        else {
+            target.removeTag(id);
+        }
         if (!target.level.isClientSide()) {
-            if (purpose) {
-                target.addTag(id);
-            }
-            else {
-                target.removeTag(id);
-            }
             PacketManager.sendToClientsTrackingAndSelf(new TrTagPacket(target.getId(), id, purpose), target);
         }
     }
 
-    public void ReleaseProjectile(LivingEntity user, ProjectileEntity projectile, int accumulation, Vector3d velocity) {
+    public static void ReleaseProjectile(LivingEntity user, ProjectileEntity projectile, int accumulation, Vector3d velocity) {
         World world = projectile.level;
         if (projectile instanceof TommyGunBulletEntity) {
             replaceProjectile(user, projectile, accumulation);
@@ -231,7 +204,7 @@ public class KraftWorkStandType<T extends StandStats> extends EntityStandType<T>
         });
     }
 
-    public void replaceProjectile(LivingEntity user, Entity projectile, int kineticEnergy) {
+    public static void replaceProjectile(LivingEntity user, Entity projectile, int kineticEnergy) {
 //        if (projectile instanceof CDBlockBulletEntity) {
 //                                    LivingEntity owner = oldProjectile.getOwner();
 //                                    CDBlockBulletEntity bullet = new CDBlockBulletEntity(user, user.level);
@@ -281,8 +254,8 @@ public class KraftWorkStandType<T extends StandStats> extends EntityStandType<T>
     }
 
     public boolean getStatus(IStandPower power) {
-        PlayerEntity user = (PlayerEntity) power.getUser();
-        return user.getCapability(PlayerUtilCapProvider.CAPABILITY).map(cap -> cap.getProjectiveLockStatus()).orElse(false);
+            LivingEntity user = power.getUser();
+        return user.getCapability(LivingUtilCapProvider.CAPABILITY).map(cap -> cap.getBlockingItemsStatus()).orElse(false);
     }
 
     public static class Builder<T extends StandStats> extends AbstractBuilder<Builder<T>, T> {

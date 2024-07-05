@@ -1,6 +1,6 @@
 package com.danielgamer321.rotp_kw.action.stand;
 
-import com.danielgamer321.rotp_kw.capability.entity.PlayerUtilCapProvider;
+import com.danielgamer321.rotp_kw.capability.entity.LivingUtilCapProvider;
 import com.danielgamer321.rotp_kw.network.PacketManager;
 import com.danielgamer321.rotp_kw.network.packets.fromserver.TrSetLockStatusPacket;
 import com.github.standobyte.jojo.action.ActionTarget;
@@ -9,7 +9,6 @@ import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.util.general.LazySupplier;
 
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
@@ -24,20 +23,19 @@ public class KraftWorkBlockingItemsStatus extends StandAction {
     @Override
     protected void perform(World world, LivingEntity user, IStandPower power, ActionTarget target) {
         if (!world.isClientSide) {
-            PlayerEntity player = (PlayerEntity) user;
             if (!getStatus(power)) {
-                setStatusServerSide(player, true);
+                setStatusServerSide(user, true);
             }
             else {
-                setStatusServerSide(player, false);
+                setStatusServerSide(user, false);
             }
         }
     }
 
-    public static void setStatusServerSide(PlayerEntity player, boolean status) {
-        player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> cap.setProjectiveLockStatus(status));
-        if (!player.level.isClientSide()) {
-            PacketManager.sendToClientsTrackingAndSelf(new TrSetLockStatusPacket(player.getId(), status, false), player);
+    public static void setStatusServerSide(LivingEntity user, boolean status) {
+        user.getCapability(LivingUtilCapProvider.CAPABILITY).ifPresent(cap -> cap.setBlockingItemsStatus(status));
+        if (!user.level.isClientSide()) {
+            PacketManager.sendToClientsTrackingAndSelf(new TrSetLockStatusPacket(user.getId(), status, false), user);
         }
     }
 
@@ -54,8 +52,8 @@ public class KraftWorkBlockingItemsStatus extends StandAction {
     }
 
     private boolean getStatus(IStandPower power) {
-        PlayerEntity player = (PlayerEntity) power.getUser();
-        return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(cap -> cap.getProjectiveLockStatus()).orElse(false);
+        LivingEntity user = power.getUser();
+        return user.getCapability(LivingUtilCapProvider.CAPABILITY).map(cap -> cap.getBlockingItemsStatus()).orElse(false);
     }
 
 

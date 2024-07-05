@@ -147,48 +147,48 @@ public class KraftWorkLockTarget extends StandAction {
                         ItemStack leggings = living.getItemBySlot(EquipmentSlotType.LEGS);
                         ItemStack boots = living.getItemBySlot(EquipmentSlotType.FEET);
                         if (TwohandItems(main.getItem()) || TwohandItems(off.getItem())) {
-                            living.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 3, 0, false, false, true));
-                            living.addEffect(new EffectInstance(InitEffects.LOCKED_OFF_HAND.get(), 3, 0, false, false, true));
+                            living.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 19999980, 0, false, false, true));
+                            living.addEffect(new EffectInstance(InitEffects.LOCKED_OFF_HAND.get(), 19999980, 0, false, false, true));
                         }
                         else {
                             if (!main.isEmpty()) {
-                                living.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 3, 0, false, false, true));
+                                living.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 19999980, 0, false, false, true));
                             }
                             if (!off.isEmpty()) {
-                                living.addEffect(new EffectInstance(InitEffects.LOCKED_OFF_HAND.get(), 3, 0, false, false, true));
+                                living.addEffect(new EffectInstance(InitEffects.LOCKED_OFF_HAND.get(), 19999980, 0, false, false, true));
                             }
                         }
                         if (!helmet.isEmpty()) {
                             binding(user, false, helmet);
-                            living.addEffect(new EffectInstance(InitEffects.LOCKED_HELMET.get(), 3, 0, false, false, true));
+                            living.addEffect(new EffectInstance(InitEffects.LOCKED_HELMET.get(), 19999980, 0, false, false, true));
                         }
                         if (!chestplace.isEmpty()) {
                             if (living instanceof AbstractHorseEntity) {
-                                living.addEffect(new EffectInstance(InitEffects.FULL_TRANSPORT_LOCKED.get(), 3, 0, false, false, true));
+                                living.addEffect(new EffectInstance(InitEffects.FULL_TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
                             }
                             else {
                                 binding(user, false, chestplace);
-                                living.addEffect(new EffectInstance(InitEffects.LOCKED_CHESTPLATE.get(), 3, 0, false, false, true));
+                                living.addEffect(new EffectInstance(InitEffects.LOCKED_CHESTPLATE.get(), 19999980, 0, false, false, true));
                             }
                         }
                         if (!leggings.isEmpty()) {
                             binding(user, false, leggings);
-                            living.addEffect(new EffectInstance(InitEffects.LOCKED_LEGGINGS.get(), 3, 0, false, false, true));
+                            living.addEffect(new EffectInstance(InitEffects.LOCKED_LEGGINGS.get(), 19999980, 0, false, false, true));
                         }
                         if (!boots.isEmpty()) {
                             binding(user, false, boots);
-                            living.addEffect(new EffectInstance(InitEffects.LOCKED_POSITION.get(), 3, 0, false, false, true));
+                            living.addEffect(new EffectInstance(InitEffects.LOCKED_POSITION.get(), 19999980, 0, false, false, true));
                         }
                         if (living instanceof RavagerEntity ||
                                 living instanceof PigEntity && ((PigEntity)living).isSaddled() ||
                                 living instanceof AbstractChestedHorseEntity && ((AbstractChestedHorseEntity)living).hasChest()) {
-                            living.addEffect(new EffectInstance(InitEffects.TRANSPORT_LOCKED.get(), 3, 0, false, false, true));
+                            living.addEffect(new EffectInstance(InitEffects.TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
                         }
                         if (living instanceof StriderEntity && ((StriderEntity)living).isSaddled() ||
                                 living instanceof AbstractHorseEntity && ((AbstractHorseEntity)living).isSaddled() ||
                                 living instanceof LlamaEntity && ((LlamaEntity)living).getSwag() != null ||
                                 living instanceof TraderLlamaEntity) {
-                            living.addEffect(new EffectInstance(InitEffects.FULL_TRANSPORT_LOCKED.get(), 3, 0, false, false, true));
+                            living.addEffect(new EffectInstance(InitEffects.FULL_TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
                         }
                     }
                 }

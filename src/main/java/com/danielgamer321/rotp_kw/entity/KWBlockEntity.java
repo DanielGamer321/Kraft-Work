@@ -1,8 +1,10 @@
 package com.danielgamer321.rotp_kw.entity;
 
+import com.danielgamer321.rotp_kw.init.AddonStands;
 import com.danielgamer321.rotp_kw.init.InitEntities;
 import com.danielgamer321.rotp_kw.power.impl.stand.type.LockedPosition;
 
+import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -38,7 +40,8 @@ public class KWBlockEntity extends Entity {
         if (!level.isClientSide()) {
             boolean validLockedPos = false;
             LivingEntity user = (LivingEntity) lockedPosition.getUser((ServerWorld) level);
-            if (user != null) {
+            if (user != null && IStandPower.getStandPowerOptional(user).map(stand ->
+                    stand.hasPower() && stand.getType() == AddonStands.KRAFT_WORK.getStandType()).orElse(false)) {
                 BlockPos blockPos = blockPosition();
                 double distance = this.distanceToSqr(user);
                 if (user.isAlive() && distance <= 140 && blockPos != null && !level.isEmptyBlock(blockPos)) {

@@ -1,12 +1,12 @@
 package com.danielgamer321.rotp_kw.network.packets.fromserver;
 
 import com.danielgamer321.rotp_kw.capability.entity.EntityUtilCapProvider;
-import com.danielgamer321.rotp_kw.capability.entity.PlayerUtilCapProvider;
+import com.danielgamer321.rotp_kw.capability.entity.LivingUtilCapProvider;
 import com.github.standobyte.jojo.client.ClientUtil;
 import com.github.standobyte.jojo.network.packets.IModPacketHandler;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -47,9 +47,9 @@ public class TrSetLockStatusPacket {
                     entity.getCapability(EntityUtilCapProvider.CAPABILITY).ifPresent(cap -> cap.setPositionLocking(msg.status));
                 }
                 else {
-                    if (entity instanceof PlayerEntity) {
-                        PlayerEntity player = (PlayerEntity) entity;
-                        player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> cap.setProjectiveLockStatus(msg.status));
+                    if (entity instanceof LivingEntity) {
+                        LivingEntity user = (LivingEntity) entity;
+                        user.getCapability(LivingUtilCapProvider.CAPABILITY).ifPresent(cap -> cap.setBlockingItemsStatus(msg.status));
                     }
                 }
             }
