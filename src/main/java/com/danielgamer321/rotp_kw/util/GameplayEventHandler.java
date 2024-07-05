@@ -9,6 +9,7 @@ import com.danielgamer321.rotp_kw.init.AddonStands;
 import com.danielgamer321.rotp_kw.init.InitEffects;
 import com.danielgamer321.rotp_kw.init.InitStands;
 import com.danielgamer321.rotp_kw.power.impl.stand.type.KraftWorkStandType;
+import com.github.standobyte.jojo.entity.stand.StandEntity;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.power.impl.stand.type.EntityStandType;
 
@@ -260,7 +261,7 @@ public class GameplayEventHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    public static void lockProjectile(LivingHurtEvent event) {
+    public static void BlockingItems(LivingHurtEvent event) {
         DamageSource dmgSource = event.getSource();
         LivingEntity target = event.getEntityLiving();
         if (dmgSource.getDirectEntity() != null && (dmgSource.isProjectile() || isMelee(dmgSource))) {
@@ -275,7 +276,7 @@ public class GameplayEventHandler {
                     }
                     if (isMelee(dmgSource)) {
                         Entity entity = dmgSource.getDirectEntity();
-                        if (entity instanceof LivingEntity && ((LivingEntity) entity).getMainHandItem().getItem() instanceof Item) {
+                        if (entity instanceof LivingEntity && !(entity instanceof StandEntity) && ((LivingEntity) entity).getMainHandItem().getItem() instanceof Item) {
                             String lock_id = String.valueOf(target.getUUID());
                             LivingEntity living = (LivingEntity) entity;
                             living.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 19999980, 0, false, false, true));
