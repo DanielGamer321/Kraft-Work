@@ -9,6 +9,8 @@ import com.danielgamer321.rotp_kw.init.AddonStands;
 import com.danielgamer321.rotp_kw.init.InitEffects;
 import com.danielgamer321.rotp_kw.init.InitStands;
 import com.danielgamer321.rotp_kw.power.impl.stand.type.KraftWorkStandType;
+import com.github.standobyte.jojo.entity.itemprojectile.BladeHatEntity;
+import com.github.standobyte.jojo.entity.itemprojectile.StandArrowEntity;
 import com.github.standobyte.jojo.entity.stand.StandEntity;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.power.impl.stand.type.EntityStandType;
@@ -23,6 +25,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -218,6 +221,14 @@ public class GameplayEventHandler {
                         entity.setNoGravity(false);
                         KraftWorkStandType.TagServerSide(entity, lock_id, false);
                     }
+                    if (entity.isVehicle()) {
+                        for(Entity passengers : entity.getPassengers()) {
+                            if (passengers instanceof LivingEntity) {
+                                LivingEntity living = (LivingEntity) passengers;
+                                living.removeEffect(InitEffects.TRANSPORT_LOCKED.get());
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -274,7 +285,17 @@ public class GameplayEventHandler {
                                 power, power.getUser(), dmgSource, event.getAmount()));
                         power.consumeStamina(30F);
                     }
-                    if (isMelee(dmgSource)) {
+                    if (dmgSource.isProjectile()) {
+                        Entity entity = dmgSource.getDirectEntity();
+                        if (entity instanceof StandArrowEntity || entity instanceof TridentEntity || entity instanceof BladeHatEntity ||
+                                (entity instanceof KWItemEntity && !((KWItemEntity)entity).willBeRemovedOnEntityHit())) {
+                            String lock_id = String.valueOf(target.getUUID());
+                            KraftWorkStandType.setPositionLockingServerSide(entity, true);
+                            KraftWorkStandType.TagServerSide(entity, lock_id, true);
+                            entity.getCapability(ProjectileUtilCapProvider.CAPABILITY).ifPresent(cap -> cap.setKineticEnergy(0));
+                        }
+                    }
+                    else if (isMelee(dmgSource)) {
                         Entity entity = dmgSource.getDirectEntity();
                         if (entity instanceof LivingEntity && !(entity instanceof StandEntity) && ((LivingEntity) entity).getMainHandItem().getItem() instanceof Item) {
                             String lock_id = String.valueOf(target.getUUID());

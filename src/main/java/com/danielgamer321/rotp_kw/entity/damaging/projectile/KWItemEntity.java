@@ -172,6 +172,10 @@ public class KWItemEntity extends ItemProjectileEntity implements IRendersAsItem
         return Remove? true : false;
     }
 
+    public boolean willBeRemovedOnEntityHit() {
+        return Remove;
+    }
+
     @Override
     public boolean isPickable() {
         return RemoveAfterHitting ? true : false;

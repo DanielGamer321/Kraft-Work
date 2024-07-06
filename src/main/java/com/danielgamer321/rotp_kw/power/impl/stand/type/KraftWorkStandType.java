@@ -4,6 +4,7 @@ import com.danielgamer321.rotp_kw.capability.entity.EntityUtilCapProvider;
 import com.danielgamer321.rotp_kw.capability.entity.LivingUtilCapProvider;
 import com.danielgamer321.rotp_kw.capability.entity.ProjectileUtilCapProvider;
 import com.danielgamer321.rotp_kw.entity.damaging.projectile.KWItemEntity;
+import com.danielgamer321.rotp_kw.init.AddonStands;
 import com.danielgamer321.rotp_kw.init.InitEffects;
 import com.danielgamer321.rotp_kw.init.InitSounds;
 import com.danielgamer321.rotp_kw.init.InitStands;
@@ -126,7 +127,19 @@ public class KraftWorkStandType<T extends StandStats> extends EntityStandType<T>
                         for(Entity passengers : entity.getPassengers()) {
                             if (passengers instanceof LivingEntity) {
                                 LivingEntity living = (LivingEntity) passengers;
-                                living.addEffect(new EffectInstance(InitEffects.TRANSPORT_LOCKED.get(), 10, 0, false, false, true));
+                                IStandPower.getStandPowerOptional(living).ifPresent(userPower -> {
+                                    if (IStandPower.getStandPowerOptional(living).map(stand -> !stand.hasPower() ||
+                                            stand.getType() != AddonStands.KRAFT_WORK.getStandType()).orElse(false)) {
+                                        if (positionLocking && distance <= 140) {
+                                            if (!living.hasEffect(InitEffects.TRANSPORT_LOCKED.get())) {
+                                                living.addEffect(new EffectInstance(InitEffects.TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
+                                            }
+                                        }
+                                        else {
+                                            living.removeEffect(InitEffects.TRANSPORT_LOCKED.get());
+                                        }
+                                    }
+                                });
                             }
                         }
                     }
