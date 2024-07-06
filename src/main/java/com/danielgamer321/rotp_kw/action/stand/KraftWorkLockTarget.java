@@ -146,50 +146,65 @@ public class KraftWorkLockTarget extends StandAction {
                         ItemStack chestplace = living.getItemBySlot(EquipmentSlotType.CHEST);
                         ItemStack leggings = living.getItemBySlot(EquipmentSlotType.LEGS);
                         ItemStack boots = living.getItemBySlot(EquipmentSlotType.FEET);
-                        if (TwohandItems(main.getItem()) || TwohandItems(off.getItem())) {
-                            living.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 19999980, 0, false, false, true));
-                            living.addEffect(new EffectInstance(InitEffects.LOCKED_OFF_HAND.get(), 19999980, 0, false, false, true));
-                        }
-                        else {
-                            if (!main.isEmpty()) {
+                        IStandPower.getStandPowerOptional(user).ifPresent(stand -> {
+                            int cost = 0;
+                            if (TwohandItems(main.getItem()) || TwohandItems(off.getItem())) {
                                 living.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 19999980, 0, false, false, true));
-                            }
-                            if (!off.isEmpty()) {
                                 living.addEffect(new EffectInstance(InitEffects.LOCKED_OFF_HAND.get(), 19999980, 0, false, false, true));
-                            }
-                        }
-                        if (!helmet.isEmpty()) {
-                            binding(user, false, helmet);
-                            living.addEffect(new EffectInstance(InitEffects.LOCKED_HELMET.get(), 19999980, 0, false, false, true));
-                        }
-                        if (!chestplace.isEmpty()) {
-                            if (living instanceof AbstractHorseEntity) {
-                                living.addEffect(new EffectInstance(InitEffects.FULL_TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
+                                cost = cost + 1;
                             }
                             else {
-                                binding(user, false, chestplace);
-                                living.addEffect(new EffectInstance(InitEffects.LOCKED_CHESTPLATE.get(), 19999980, 0, false, false, true));
+                                if (!main.isEmpty()) {
+                                    living.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 19999980, 0, false, false, true));
+                                    cost = cost + 1;
+                                }
+                                if (!off.isEmpty()) {
+                                    living.addEffect(new EffectInstance(InitEffects.LOCKED_OFF_HAND.get(), 19999980, 0, false, false, true));
+                                    cost = cost + 1;
+                                }
                             }
-                        }
-                        if (!leggings.isEmpty()) {
-                            binding(user, false, leggings);
-                            living.addEffect(new EffectInstance(InitEffects.LOCKED_LEGGINGS.get(), 19999980, 0, false, false, true));
-                        }
-                        if (!boots.isEmpty()) {
-                            binding(user, false, boots);
-                            living.addEffect(new EffectInstance(InitEffects.LOCKED_POSITION.get(), 19999980, 0, false, false, true));
-                        }
-                        if (living instanceof RavagerEntity ||
-                                living instanceof PigEntity && ((PigEntity)living).isSaddled() ||
-                                living instanceof AbstractChestedHorseEntity && ((AbstractChestedHorseEntity)living).hasChest()) {
-                            living.addEffect(new EffectInstance(InitEffects.TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
-                        }
-                        if (living instanceof StriderEntity && ((StriderEntity)living).isSaddled() ||
-                                living instanceof AbstractHorseEntity && ((AbstractHorseEntity)living).isSaddled() ||
-                                living instanceof LlamaEntity && ((LlamaEntity)living).getSwag() != null ||
-                                living instanceof TraderLlamaEntity) {
-                            living.addEffect(new EffectInstance(InitEffects.FULL_TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
-                        }
+                            if (!helmet.isEmpty()) {
+                                binding(user, false, helmet);
+                                living.addEffect(new EffectInstance(InitEffects.LOCKED_HELMET.get(), 19999980, 0, false, false, true));
+                                cost = cost + 1;
+                            }
+                            if (!chestplace.isEmpty()) {
+                                if (living instanceof AbstractHorseEntity) {
+                                    living.addEffect(new EffectInstance(InitEffects.FULL_TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
+                                    cost = cost + 1;
+                                }
+                                else {
+                                    binding(user, false, chestplace);
+                                    living.addEffect(new EffectInstance(InitEffects.LOCKED_CHESTPLATE.get(), 19999980, 0, false, false, true));
+                                    cost = cost + 1;
+                                }
+                            }
+                            if (!leggings.isEmpty()) {
+                                binding(user, false, leggings);
+                                living.addEffect(new EffectInstance(InitEffects.LOCKED_LEGGINGS.get(), 19999980, 0, false, false, true));
+                                cost = cost + 1;
+                            }
+                            if (!boots.isEmpty()) {
+                                binding(user, false, boots);
+                                living.addEffect(new EffectInstance(InitEffects.LOCKED_POSITION.get(), 19999980, 0, false, false, true));
+                                cost = cost + 1;
+                            }
+                            if (living instanceof RavagerEntity ||
+                                    living instanceof PigEntity && ((PigEntity)living).isSaddled() ||
+                                    living instanceof AbstractChestedHorseEntity && ((AbstractChestedHorseEntity)living).hasChest()) {
+                                living.addEffect(new EffectInstance(InitEffects.TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
+                                cost = cost + 1;
+                            }
+                            if (living instanceof StriderEntity && ((StriderEntity)living).isSaddled() ||
+                                    living instanceof AbstractHorseEntity && ((AbstractHorseEntity)living).isSaddled() ||
+                                    living instanceof LlamaEntity && ((LlamaEntity)living).getSwag() != null ||
+                                    living instanceof TraderLlamaEntity) {
+                                living.addEffect(new EffectInstance(InitEffects.FULL_TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
+                                cost = cost + 1;
+                            }
+                            cost = 10 * (cost - 1);
+                            stand.consumeStamina(cost);
+                        });
                     }
                 }
                 else {
@@ -209,68 +224,6 @@ public class KraftWorkLockTarget extends StandAction {
     @Override
     public boolean cancelHeldOnGettingAttacked(IStandPower power, DamageSource dmgSource, float dmgAmount) {
         return true;
-    }
-
-    @Override
-    public float getStaminaCost(IStandPower stand) {
-        RayTraceResult target = InputHandler.getInstance().mouseTarget;
-        ActionTarget actionTarget = ActionTarget.fromRayTraceResult(target);
-        if (actionTarget.getEntity() != null) {
-            Entity entity =  actionTarget.getEntity();
-            int multiplier = 0;
-            if (entity instanceof LivingEntity) {
-                LivingEntity targetEntity = (LivingEntity) actionTarget.getEntity();
-                ItemStack main = targetEntity.getItemBySlot(EquipmentSlotType.MAINHAND);
-                ItemStack off = targetEntity.getItemBySlot(EquipmentSlotType.OFFHAND);
-                ItemStack helmet = targetEntity.getItemBySlot(EquipmentSlotType.HEAD);
-                ItemStack chestplace = targetEntity.getItemBySlot(EquipmentSlotType.CHEST);
-                ItemStack leggings = targetEntity.getItemBySlot(EquipmentSlotType.LEGS);
-                ItemStack boots = targetEntity.getItemBySlot(EquipmentSlotType.FEET);
-                if (main.getItem() instanceof GlovesItem || off.getItem() instanceof GlovesItem) {
-                    multiplier = multiplier + 2;
-                }
-                else {
-                    if (!main.isEmpty()) {
-                        multiplier = multiplier + 1;
-                    }
-                    if (!off.isEmpty()) {
-                        multiplier = multiplier + 1;
-                    }
-                }
-                if (!helmet.isEmpty()) {
-                    multiplier = multiplier + 1;
-                }
-                if (!chestplace.isEmpty()) {
-                    multiplier = multiplier + 1;
-                }
-                if (!leggings.isEmpty()) {
-                    multiplier = multiplier + 1;
-                }
-                if (!boots.isEmpty()) {
-                    multiplier = multiplier + 1;
-                }
-                if (targetEntity instanceof RavagerEntity) {
-                    multiplier = multiplier + 1;
-                }
-                if (targetEntity instanceof PigEntity && ((PigEntity)targetEntity).isSaddled()) {
-                    multiplier = multiplier + 1;
-                }
-                if (targetEntity instanceof StriderEntity && ((StriderEntity)targetEntity).isSaddled()) {
-                    multiplier = multiplier + 1;
-                }
-                if (targetEntity instanceof AbstractHorseEntity && ((AbstractHorseEntity)targetEntity).isSaddled()) {
-                    multiplier = multiplier + 1;
-                }
-                if (targetEntity instanceof AbstractChestedHorseEntity && ((AbstractChestedHorseEntity)targetEntity).hasChest()) {
-                    multiplier = multiplier + 1;
-                }
-                if (targetEntity instanceof TraderLlamaEntity || targetEntity instanceof LlamaEntity && ((LlamaEntity)targetEntity).getSwag() != null) {
-                    multiplier = multiplier + 1;
-                }
-            }
-            return multiplier > 1 ? 10 * multiplier : super.getStaminaCost(stand);
-        }
-        return super.getStaminaCost(stand);
     }
 
     @Override
