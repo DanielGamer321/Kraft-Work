@@ -9,6 +9,6 @@
   },
   "kraft_work_released_projectile": {
     "subtitle": "jojo.subtitle.shot",
-    "sounds": [ "rotp_kw:stand/kraft_work_released_projectile" ]
+    "sounds": [ "rotp_kw:stand/kraft_work_released_projectile", "rotp_kw:stand/kraft_work_released_projectile_2" ]
   }
 }

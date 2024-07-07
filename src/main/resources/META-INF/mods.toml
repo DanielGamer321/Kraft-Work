@@ -6,6 +6,11 @@ modId="rotp_kw"
 version="${file.jarVersion}"
 displayName="RotP Kraft Work"
 logoFile="logo.png"
+credits='''
+
+  Stand sound effects:
+    LAMBIRNO - https://www.youtube.com/channel/UCimScfxJm09SNUiWNc0LldQ
+'''
 authors="DanielGamer321, StandoByte"
 description='''
 An addon for Ripples of the Past mod, adding a new Stand - Kraft Work.
