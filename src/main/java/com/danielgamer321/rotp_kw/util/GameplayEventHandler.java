@@ -275,39 +275,39 @@ public class GameplayEventHandler {
     public static void BlockingItems(LivingHurtEvent event) {
         DamageSource dmgSource = event.getSource();
         LivingEntity target = event.getEntityLiving();
-        if (dmgSource.getDirectEntity() != null && (dmgSource.isProjectile() || isMelee(dmgSource))) {
-            IStandPower.getStandPowerOptional(target).ifPresent(power -> {
-                if (IStandPower.getStandPowerOptional(target).map(stand ->
-                        stand.hasPower() && stand.getType() == AddonStands.KRAFT_WORK.getStandType()).orElse(false) && ((KraftWorkStandType<?>) power.getType()).getStatus(power)
-                        && InitStands.KRAFT_WORK_BI_STATUS.get().isUnlocked(power)) {
-                    if (!dmgSource.isBypassArmor()) {
-                        event.setAmount(((KraftWorkStandType<?>) power.getType()).KWReduceDamageAmount(
-                                power, power.getUser(), dmgSource, event.getAmount()));
-                        power.consumeStamina(30F);
-                    }
-                    if (dmgSource.isProjectile()) {
-                        Entity entity = dmgSource.getDirectEntity();
-                        if (entity instanceof StandArrowEntity || entity instanceof TridentEntity || entity instanceof BladeHatEntity ||
-                                (entity instanceof KWItemEntity && !((KWItemEntity)entity).willBeRemovedOnEntityHit())) {
-                            String lock_id = String.valueOf(target.getUUID());
-                            KraftWorkStandType.setPositionLockingServerSide(entity, true);
-                            KraftWorkStandType.TagServerSide(entity, lock_id, true);
-                            entity.getCapability(ProjectileUtilCapProvider.CAPABILITY).ifPresent(cap -> cap.setKineticEnergy(0));
+        if (dmgSource.getDirectEntity() != null) {
+            Entity entity = dmgSource.getDirectEntity();
+            if (dmgSource.isProjectile() || (isMelee(dmgSource) && entity instanceof LivingEntity &&
+                    !((LivingEntity)entity).getMainHandItem().isEmpty())) {
+                IStandPower.getStandPowerOptional(target).ifPresent(power -> {
+                    if (IStandPower.getStandPowerOptional(target).map(stand ->
+                            stand.hasPower() && stand.getType() == AddonStands.KRAFT_WORK.getStandType()).orElse(false) && ((KraftWorkStandType<?>) power.getType()).getStatus(power)
+                            && InitStands.KRAFT_WORK_BI_STATUS.get().isUnlocked(power)) {
+                        if (!dmgSource.isBypassArmor()) {
+                            event.setAmount(((KraftWorkStandType<?>) power.getType()).KWReduceDamageAmount(
+                                    power, power.getUser(), dmgSource, event.getAmount()));
+                            power.consumeStamina(30F);
                         }
-                    }
-                    else if (isMelee(dmgSource)) {
-                        Entity entity = dmgSource.getDirectEntity();
-                        if (entity instanceof LivingEntity && !(entity instanceof StandEntity) && ((LivingEntity) entity).getMainHandItem().getItem() instanceof Item) {
+                        if (dmgSource.isProjectile()) {
+                            if (entity instanceof StandArrowEntity || entity instanceof TridentEntity || entity instanceof BladeHatEntity ||
+                                    (entity instanceof KWItemEntity && !((KWItemEntity)entity).willBeRemovedOnEntityHit())) {
+                                String lock_id = String.valueOf(target.getUUID());
+                                KraftWorkStandType.setPositionLockingServerSide(entity, true);
+                                KraftWorkStandType.TagServerSide(entity, lock_id, true);
+                                entity.getCapability(ProjectileUtilCapProvider.CAPABILITY).ifPresent(cap -> cap.setKineticEnergy(0));
+                            }
+                        }
+                        else if (isMelee(dmgSource) && entity instanceof LivingEntity && !(entity instanceof StandEntity)) {
                             String lock_id = String.valueOf(target.getUUID());
                             LivingEntity living = (LivingEntity) entity;
                             living.addEffect(new EffectInstance(InitEffects.LOCKED_MAIN_HAND.get(), 19999980, 0, false, false, true));
                             KraftWorkStandType.setPositionLockingServerSide(entity, true);
                             KraftWorkStandType.TagServerSide(entity, lock_id, true);
                         }
+                        power.addLearningProgressPoints(InitStands.KRAFT_WORK_BI_STATUS.get(), 0.001F);
                     }
-                    power.addLearningProgressPoints(InitStands.KRAFT_WORK_BI_STATUS.get(), 0.001F);
-                }
-            });
+                });
+            }
         }
     }
 
