@@ -6,14 +6,12 @@ import com.github.standobyte.jojo.action.stand.StandEntityAction;
 import com.github.standobyte.jojo.client.render.entity.model.stand.HumanoidStandModel;
 import com.github.standobyte.jojo.client.render.entity.pose.*;
 import com.github.standobyte.jojo.client.render.entity.pose.anim.PosedActionAnimation;
-import com.github.standobyte.jojo.client.render.entity.pose.anim.barrage.StandOneHandedBarrageAnimation;
 import com.github.standobyte.jojo.entity.stand.StandPose;
-
-import net.minecraft.util.Hand;
 
 // Made with Blockbench 4.8.3
 // Exported for Minecraft version 1.15 - 1.16 with Mojang mappings
 // Paste this class into your mod and generate all required imports
+
 
 public class KraftWorkModel extends HumanoidStandModel<KraftWorkEntity> {
 
@@ -65,17 +63,21 @@ public class KraftWorkModel extends HumanoidStandModel<KraftWorkEntity> {
 		torso.texOffs(50, 74).addBox(1.5F, 1.0F, 2.35F, 1.0F, 1.0F, 1.0F, -0.05F, false);
 		torso.texOffs(44, 74).addBox(-2.5F, 1.0F, 2.35F, 1.0F, 1.0F, 1.0F, -0.05F, false);
 
-		leftArm.texOffs(44, 110).addBox(-0.5F, 3.0F, 1.5F, 1.0F, 1.0F, 1.0F, 0.0F, false);
+		leftArm.texOffs(0, 110).addBox(1.5F, -1.0F, -0.5F, 1.0F, 1.0F, 1.0F, 0.005F, false);
+		leftArm.texOffs(44, 109).addBox(-1.0F, 2.5F, 1.6F, 2.0F, 2.0F, 1.0F, 0.0F, false);
+		leftArm.texOffs(45, 107).addBox(-0.5F, 3.0F, 2.1F, 1.0F, 1.0F, 1.0F, 0.01F, false);
 
 		leftForeArm.texOffs(53, 117).addBox(1.25F, 0.5F, -1.0F, 1.0F, 3.0F, 2.0F, -0.15F, false);
 		leftForeArm.texOffs(46, 117).addBox(-2.25F, 0.5F, -1.0F, 1.0F, 3.0F, 2.0F, -0.15F, false);
 		leftForeArm.texOffs(42, 97).addBox(1.5F, 5.1F, -2.0F, 1.0F, 1.0F, 4.0F, -0.2F, true);
 
-		rightArm.texOffs(12, 110).addBox(-0.5F, 3.0F, 1.5F, 1.0F, 1.0F, 1.0F, 0.0F, false);
+		rightArm.texOffs(32, 110).addBox(-2.5F, -1.0F, -0.5F, 1.0F, 1.0F, 1.0F, 0.005F, false);
+		rightArm.texOffs(12, 109).addBox(-1.0F, 2.5F, 1.6F, 2.0F, 2.0F, 1.0F, 0.0F, false);
+		rightArm.texOffs(45, 107).addBox(-0.5F, 3.0F, 2.1F, 1.0F, 1.0F, 1.0F, 0.01F, false);
 
+		rightForeArm.texOffs(0, 118).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 6.0F, 4.0F, -0.001F, false);
 		rightForeArm.texOffs(14, 117).addBox(-2.25F, 0.5F, -1.0F, 1.0F, 3.0F, 2.0F, -0.15F, false);
 		rightForeArm.texOffs(21, 117).addBox(1.25F, 0.5F, -1.0F, 1.0F, 3.0F, 2.0F, -0.15F, false);
-		rightForeArm.texOffs(10, 97).addBox(-2.5F, 5.1F, -2.0F, 1.0F, 1.0F, 4.0F, -0.2F, false);
 
 		leftLeg.texOffs(94, 119).addBox(-0.9F, 4.5F, -2.5F, 2.0F, 2.0F, 1.0F, 0.0F, true);
 
@@ -85,7 +87,7 @@ public class KraftWorkModel extends HumanoidStandModel<KraftWorkEntity> {
 		rightLeg.texOffs(62, 119).addBox(-1.1F, 4.5F, -2.5F, 2.0F, 2.0F, 1.0F, 0.0F, false);
 
 		rightLowerLeg.texOffs(78, 117).addBox(-2.25F, 0.5F, -1.0F, 1.0F, 3.0F, 2.0F, -0.15F, false);
-		rightLowerLeg.texOffs(85, 117).addBox(1.25F, 0.5F, -1.0F, 1.0F, 3.0F, 2.0F, -0.15F, false);
+		rightLowerLeg.texOffs(64, 118).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 6.0F, 4.0F, -0.001F, false);
 	}
 
 	@Override
@@ -187,26 +189,66 @@ public class KraftWorkModel extends HumanoidStandModel<KraftWorkEntity> {
 						.build(idlePose))
 				.build(idlePose));
 
-		ModelPose<KraftWorkEntity> touchPose1 = new ModelPose<>(new RotationAngle[] {
+		RotationAngle[] touchPose1 = new RotationAngle[] {
 				RotationAngle.fromDegrees(head, 5F, -2.5F, 0),
 				RotationAngle.fromDegrees(leftArm, -90F, -5F, -87.5F),
 				RotationAngle.fromDegrees(leftForeArm, -45F, -5F, 0)
-		});
-		ModelPose<KraftWorkEntity> touchPose2 = new ModelPose<>(new RotationAngle[] {
+		};
+		RotationAngle[] touchPose2 = new RotationAngle[] {
+				RotationAngle.fromDegrees(head, 5F, -2.5F, 0),
+				RotationAngle.fromDegrees(leftArm, -90F, -5F, -87.5F),
+				RotationAngle.fromDegrees(leftForeArm, -45F, -1.67F, 0)
+		};
+
+		RotationAngle[] touchPose3 = new RotationAngle[] {
 				RotationAngle.fromDegrees(head, 5F, -2.5F, 0),
 				RotationAngle.fromDegrees(leftArm, -90F, -5F, -87.5F),
 				RotationAngle.fromDegrees(leftForeArm, -45F, 0, 0)
-		});
+		};
+		RotationAngle[] touchPose4 = new RotationAngle[] {
+				RotationAngle.fromDegrees(head, 5F, -2.5F, 0),
+				RotationAngle.fromDegrees(leftArm, -90F, -5F, -87.5F),
+				RotationAngle.fromDegrees(leftForeArm, -45F, -2.5, 0)
+		};
 
-		IModelPose<KraftWorkEntity> touchPose = new ModelPoseTransition<KraftWorkEntity>(touchPose1, touchPose2).setEasing(sw -> {
-			float halfSwing = sw < 0.4F ? sw * 20 / 8 : sw > 0.6F ? (1 - sw) * 20 / 8 : 1F;
-			return halfSwing * halfSwing * halfSwing;
-		});
+		IModelPose<KraftWorkEntity> touchStart = new ModelPoseSided<>(
+				new ModelPose<KraftWorkEntity>(touchPose1),
+				new ModelPose<KraftWorkEntity>(touchPose1));
 
-		actionAnim.putIfAbsent(KraftWorkEnergyAccumulation.GIVE_ENERGY_POSE, new StandOneHandedBarrageAnimation<KraftWorkEntity>(this,
-				touchPose,
-				idlePose,
-				Hand.OFF_HAND));
+		IModelPose<KraftWorkEntity> touchTurn = new ModelPoseSided<>(
+				new ModelPose<KraftWorkEntity>(touchPose2),
+				new ModelPose<KraftWorkEntity>(touchPose2));
+
+		IModelPose<KraftWorkEntity> touchImpact = new ModelPoseSided<>(
+				new ModelPose<KraftWorkEntity>(touchPose3),
+				new ModelPose<KraftWorkEntity>(touchPose3)).setEasing(x -> x * x * x);
+
+		IModelPose<KraftWorkEntity> touchTurnBack = new ModelPoseSided<>(
+				new ModelPose<KraftWorkEntity>(touchPose4),
+				new ModelPose<KraftWorkEntity>(touchPose4)).setEasing(x -> x * x * x);
+
+		IModelPose<KraftWorkEntity> touchEnd = new ModelPoseSided<>(
+				new ModelPose<KraftWorkEntity>(touchPose1),
+				new ModelPose<KraftWorkEntity>(touchPose1));
+
+		actionAnim.putIfAbsent(KraftWorkEnergyAccumulation.GIVE_ENERGY_POSE,
+				new PosedActionAnimation.Builder<KraftWorkEntity>()
+
+						.addPose(StandEntityAction.Phase.WINDUP, new ModelPoseTransitionMultiple.Builder<KraftWorkEntity>(touchStart)
+								.addPose(0.5F, touchTurn)
+								.addPose(0.75F, touchImpact)
+								.build(touchImpact))
+
+						.addPose(StandEntityAction.Phase.PERFORM, new ModelPoseTransitionMultiple.Builder<KraftWorkEntity>(touchImpact)
+								.addPose(0.25F, touchImpact)
+								.addPose(0.5F, touchTurnBack)
+								.build(touchEnd))
+
+						.addPose(StandEntityAction.Phase.RECOVERY, new ModelPoseTransitionMultiple.Builder<KraftWorkEntity>(touchEnd)
+								.addPose(0.75F, touchEnd)
+								.build(idlePose))
+
+						.build(idlePose));
 
 		super.initActionPoses();
 	}

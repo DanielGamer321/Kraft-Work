@@ -1,10 +1,15 @@
 package com.danielgamer321.rotp_kw.entity.damaging.projectile;
 
+import com.danielgamer321.rotp_kw.capability.entity.ProjectileUtilCapProvider;
 import com.danielgamer321.rotp_kw.init.InitEntities;
 import com.github.standobyte.jojo.entity.itemprojectile.ItemProjectileEntity;
 import com.github.standobyte.jojo.init.ModStatusEffects;
 import com.github.standobyte.jojo.util.mc.damage.DamageUtil;
 
+import net.minecraft.block.BlockState;
+import net.minecraft.block.material.Material;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.monster.SilverfishEntity;
@@ -53,14 +58,13 @@ public class KWItemEntity extends ItemProjectileEntity implements IRendersAsItem
     
     @Override
     protected boolean hurtTarget(Entity target, Entity thrower) {
-        Item item = entityData.get(ITEM).getItem();
-        if (item == Items.TORCH ||
-            item == Items.SOUL_TORCH ||
-            item == Items.CAMPFIRE ||
-            item == Items.SOUL_CAMPFIRE ||
-            item == Items.MAGMA_BLOCK) {
+        ItemStack itemStack = entityData.get(ITEM).getStack();
+        Item item = itemStack.getItem();
+        int fireAspect = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FIRE_ASPECT, itemStack);
+        if (item == Items.TORCH || item == Items.SOUL_TORCH || item == Items.CAMPFIRE ||
+            item == Items.SOUL_CAMPFIRE || item == Items.MAGMA_BLOCK || fireAspect > 0) {
             return DamageUtil.dealDamageAndSetOnFire(target, 
-                    entity -> super.hurtTarget(target, thrower), 4, true);
+                    entity -> super.hurtTarget(target, thrower), fireAspect > 0 ? 4 * fireAspect : 4, true);
         }
         boolean hurt = super.hurtTarget(target, thrower);
         
@@ -87,6 +91,15 @@ public class KWItemEntity extends ItemProjectileEntity implements IRendersAsItem
                 else if (item == Items.WITHER_ROSE) {
                     if (!living.isInvulnerableTo(DamageSource.WITHER)) {
                         living.addEffect(new EffectInstance(Effects.WITHER, 40, 0));
+                    }
+                }
+                else if (item instanceof BlockItem) {
+                    BlockItem block = (BlockItem) item;
+                    BlockState state = block.getBlock().defaultBlockState();
+                    float glassShardBleedingChance = Math.max(1 - living.getArmorCoverPercentage(), 0.05f);
+                    int kineticEnergy = this.getCapability(ProjectileUtilCapProvider.CAPABILITY).map(cap -> cap.getKineticEnergy()).orElse(0);
+                    if (state.getMaterial() == Material.GLASS && random.nextFloat() < glassShardBleedingChance && kineticEnergy >= 100) {
+                        living.addEffect(new EffectInstance(ModStatusEffects.BLEEDING.get(), 100, 0, false, false, true));
                     }
                 }
             }

@@ -31,6 +31,9 @@ public class InitSounds {
     public static final RegistryObject<SoundEvent> KRAFT_WORK_BLOCKS_A_PROJECTILE = SOUNDS.register("kraft_work_blocks_a_projectile",
             () -> new SoundEvent(new ResourceLocation(RotpKraftWorkAddon.MOD_ID, "kraft_work_blocks_a_projectile")));
 
+    public static final RegistryObject<SoundEvent> KRAFT_WORK_GIVING_KINETIC_ENERGY = SOUNDS.register("kraft_work_giving_kinetic_energy",
+            () -> new SoundEvent(new ResourceLocation(RotpKraftWorkAddon.MOD_ID, "kraft_work_giving_kinetic_energy")));
+
     public static final RegistryObject<SoundEvent> KRAFT_WORK_RELEASED_PROJECTILE = SOUNDS.register("kraft_work_released_projectile",
             () -> new SoundEvent(new ResourceLocation(RotpKraftWorkAddon.MOD_ID, "kraft_work_released_projectile")));
 

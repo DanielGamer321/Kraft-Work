@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class KraftWorkReleaseTarget extends StandAction {
-    private static final double DETECTION_RANGE = 12;
+    private static final double DETECTION_RANGE = 13;
     public KraftWorkReleaseTarget(Builder builder) {
         super(builder);
     }

@@ -29,7 +29,7 @@ public class ProjectileUtilCap {
     }
 
     public void addkineticEnergy() {
-        setKineticEnergy(accumulation + 1);
+        setKineticEnergy(accumulation + 10);
     }
 
     public int getKineticEnergy() {

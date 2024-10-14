@@ -19,13 +19,15 @@ public class ClientInit {
 
     @SubscribeEvent
     public static void onFMLClientSetup(FMLClientSetupEvent event) {
-        Minecraft mc = event.getMinecraftSupplier().get();
-
         RenderingRegistry.registerEntityRenderingHandler(InitEntities.KW_ITEM.get(), KWItemRenderer::new);
         RenderingRegistry.registerEntityRenderingHandler(InitEntities.KW_BLOCK.get(), KWBlockRenderer::new);
 
         RenderingRegistry.registerEntityRenderingHandler(AddonStands.KRAFT_WORK.getEntityType(), KraftWorkRenderer::new);
 
-        InputHandler.init(mc);
+        event.enqueueWork(() -> {
+            Minecraft mc = event.getMinecraftSupplier().get();
+
+            InputHandler.init(mc);
+        });
     }
 }

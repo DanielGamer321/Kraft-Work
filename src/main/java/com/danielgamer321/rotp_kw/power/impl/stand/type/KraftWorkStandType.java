@@ -55,16 +55,28 @@ public class KraftWorkStandType<T extends StandStats> extends EntityStandType<T>
     }
 
     @Override
+    public float getStaminaRegen(IStandPower power) {
+        LivingEntity user = power.getUser();
+        if (user.getCapability(LivingUtilCapProvider.CAPABILITY).map(cap -> cap.getBlockingItemsStatus()).orElse(false)) {
+            return super.getStaminaRegen(power) * 0.5F;
+        }
+        else {
+            return super.getStaminaRegen(power);
+        }
+    }
+
+    @Override
     public void tickUser(LivingEntity user, IStandPower power) {
-        if (!user.level.isClientSide()) {
+        World world = user.level;
+        if (!world.isClientSide()) {
             String lock_id = String.valueOf(user.getUUID());
-            MCUtil.getAllEntities(user.level).forEach(entity -> {
+            MCUtil.getAllEntities(world).forEach(entity -> {
                 if (entity.getTags().contains(lock_id)) {
                     double distance = entity.distanceToSqr(user);
                     boolean positionLocking = entity.getCapability(EntityUtilCapProvider.CAPABILITY).map(cap -> cap.getPositionLocking()).orElse(false);
                     if (entity instanceof LivingEntity && !(entity instanceof ArmorStandEntity)) {
                         LivingEntity lockedEntity = (LivingEntity) entity;
-                        if (!positionLocking || distance > 140 || !lockedEntity.isAlive() || !InitEffects.isLocked(lockedEntity)) {
+                        if (!positionLocking || distance > 150 || !lockedEntity.isAlive() || !InitEffects.isLocked(lockedEntity)) {
                             ItemStack helmet = lockedEntity.getItemBySlot(EquipmentSlotType.HEAD);
                             ItemStack chestplace = lockedEntity.getItemBySlot(EquipmentSlotType.CHEST);
                             ItemStack leggings = lockedEntity.getItemBySlot(EquipmentSlotType.LEGS);
@@ -90,13 +102,13 @@ public class KraftWorkStandType<T extends StandStats> extends EntityStandType<T>
                         int kineticEnergy = entity.getCapability(ProjectileUtilCapProvider.CAPABILITY).map(cap -> cap.getKineticEnergy()).orElse(0);
                         int flightTicks = projectile.getCapability(ProjectileUtilCapProvider.CAPABILITY).map(cap -> cap.getFlightTicks()).orElse(0);
                         Vector3d velocity = projectile instanceof FireworkRocketEntity ?
-                                projectile.getDeltaMovement().normalize().add(user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)3.15F + (0.143F * kineticEnergy)) :
-                                projectile.getDeltaMovement().normalize().add(user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)0.143F * kineticEnergy);
-                        if (positionLocking && distance <= 140) {
+                                projectile.getDeltaMovement().normalize().add(world.random.nextGaussian() * (double)0.0075F * (double)0.0F, world.random.nextGaussian() * (double)0.0075F * (double)0.0F, world.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)3.15F + (0.143F * kineticEnergy)) :
+                                projectile.getDeltaMovement().normalize().add(world.random.nextGaussian() * (double)0.0075F * (double)0.0F, world.random.nextGaussian() * (double)0.0075F * (double)0.0F, world.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)0.143F * kineticEnergy);
+                        if (positionLocking && distance <= 150) {
                             if (projectile.canUpdate()) {
                                 setCanUpdateServerSide(projectile, false);
                             }
-                            projectile.getDeltaMovement().normalize().add(user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)0.001F);
+                            projectile.getDeltaMovement().normalize().add(world.random.nextGaussian() * (double)0.0075F * (double)0.0F, world.random.nextGaussian() * (double)0.0075F * (double)0.0F, world.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)0.001F);
                             projectile.setNoGravity(true);
                         }
                         else {
@@ -111,12 +123,12 @@ public class KraftWorkStandType<T extends StandStats> extends EntityStandType<T>
                         }
                     }
                     else {
-                        if (positionLocking && distance <= 140) {
+                        if (positionLocking && distance <= 150) {
                             entity.fallDistance = 0.0F;
                             setCanUpdateServerSide(entity, false);
                             entity.setNoGravity(true);
                         }
-                        else if (!positionLocking || distance > 140 || !user.isAlive()) {
+                        else if (!positionLocking || distance > 150 || !user.isAlive()) {
                             setPositionLockingServerSide(entity, false);
                             setCanUpdateServerSide(entity, true);
                             entity.setNoGravity(false);
@@ -130,7 +142,7 @@ public class KraftWorkStandType<T extends StandStats> extends EntityStandType<T>
                                 IStandPower.getStandPowerOptional(living).ifPresent(userPower -> {
                                     if (IStandPower.getStandPowerOptional(living).map(stand -> !stand.hasPower() ||
                                             stand.getType() != AddonStands.KRAFT_WORK.getStandType()).orElse(false)) {
-                                        if (positionLocking && distance <= 140) {
+                                        if (positionLocking && distance <= 150) {
                                             if (!living.hasEffect(InitEffects.TRANSPORT_LOCKED.get())) {
                                                 living.addEffect(new EffectInstance(InitEffects.TRANSPORT_LOCKED.get(), 19999980, 0, false, false, true));
                                             }
@@ -145,6 +157,7 @@ public class KraftWorkStandType<T extends StandStats> extends EntityStandType<T>
                     }
                 }
             });
+
         }
         super.tickUser(user, power);
     }

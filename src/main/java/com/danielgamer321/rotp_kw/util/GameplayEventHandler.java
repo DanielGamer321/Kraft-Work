@@ -9,6 +9,7 @@ import com.danielgamer321.rotp_kw.init.AddonStands;
 import com.danielgamer321.rotp_kw.init.InitEffects;
 import com.danielgamer321.rotp_kw.init.InitStands;
 import com.danielgamer321.rotp_kw.power.impl.stand.type.KraftWorkStandType;
+import com.github.standobyte.jojo.entity.damaging.DamagingEntity;
 import com.github.standobyte.jojo.entity.itemprojectile.BladeHatEntity;
 import com.github.standobyte.jojo.entity.itemprojectile.StandArrowEntity;
 import com.github.standobyte.jojo.entity.stand.StandEntity;
@@ -27,7 +28,6 @@ import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.play.server.SPlayEntityEffectPacket;
@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.danielgamer321.rotp_kw.action.stand.KraftWorkLockYourself.binding;
+import static com.danielgamer321.rotp_kw.action.stand.KraftWorkPlaceProjectile.placeProjectile;
 
 @EventBusSubscriber(modid = RotpKraftWorkAddon.MOD_ID)
 public class GameplayEventHandler {
@@ -277,13 +278,13 @@ public class GameplayEventHandler {
         LivingEntity target = event.getEntityLiving();
         if (dmgSource.getDirectEntity() != null) {
             Entity entity = dmgSource.getDirectEntity();
-            if (dmgSource.isProjectile() || (isMelee(dmgSource) && entity instanceof LivingEntity &&
-                    !((LivingEntity)entity).getMainHandItem().isEmpty())) {
+            if ((dmgSource.isProjectile() && !(entity instanceof DamagingEntity && ((DamagingEntity)entity).standDamage())) ||
+                    (isMelee(dmgSource) && entity instanceof LivingEntity && !((LivingEntity)entity).getMainHandItem().isEmpty())) {
                 IStandPower.getStandPowerOptional(target).ifPresent(power -> {
                     if (IStandPower.getStandPowerOptional(target).map(stand ->
                             stand.hasPower() && stand.getType() == AddonStands.KRAFT_WORK.getStandType()).orElse(false) && ((KraftWorkStandType<?>) power.getType()).getStatus(power)
                             && InitStands.KRAFT_WORK_BI_STATUS.get().isUnlocked(power)) {
-                        if (!dmgSource.isBypassArmor()) {
+                        if (!dmgSource.isBypassArmor() && !(entity instanceof StandEntity)) {
                             event.setAmount(((KraftWorkStandType<?>) power.getType()).KWReduceDamageAmount(
                                     power, power.getUser(), dmgSource, event.getAmount()));
                             power.consumeStamina(30F);
@@ -304,6 +305,14 @@ public class GameplayEventHandler {
                             KraftWorkStandType.setPositionLockingServerSide(entity, true);
                             KraftWorkStandType.TagServerSide(entity, lock_id, true);
                         }
+//                        else if (isMelee(dmgSource) && entity instanceof StandEntity) {
+//                            StandEntity stand = (StandEntity) entity;
+//                            ItemStack item = stand.getMainHandItem();
+//                            if (!item.isEmpty()) {
+//                                placeProjectile(target.level, target, stand, item, power);
+//                                item.shrink(1);
+//                            }
+//                        }
                         power.addLearningProgressPoints(InitStands.KRAFT_WORK_BI_STATUS.get(), 0.001F);
                     }
                 });

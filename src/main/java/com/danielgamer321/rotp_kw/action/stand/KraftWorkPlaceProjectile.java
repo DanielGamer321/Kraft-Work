@@ -4,9 +4,11 @@ import com.danielgamer321.rotp_kw.entity.damaging.projectile.KWItemEntity;
 import com.github.standobyte.jojo.action.ActionConditionResult;
 import com.github.standobyte.jojo.action.ActionTarget;
 import com.github.standobyte.jojo.action.stand.StandAction;
+import com.github.standobyte.jojo.entity.damaging.projectile.MolotovEntity;
 import com.github.standobyte.jojo.entity.damaging.projectile.TommyGunBulletEntity;
 import com.github.standobyte.jojo.entity.itemprojectile.BladeHatEntity;
 import com.github.standobyte.jojo.entity.itemprojectile.KnifeEntity;
+import com.github.standobyte.jojo.entity.stand.StandEntity;
 import com.github.standobyte.jojo.init.ModItems;
 import com.github.standobyte.jojo.init.ModSounds;
 import com.github.standobyte.jojo.init.ModStatusEffects;
@@ -19,6 +21,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.EnderPearlEntity;
 import net.minecraft.entity.item.ExperienceBottleEntity;
@@ -63,11 +66,13 @@ public class KraftWorkPlaceProjectile extends StandAction {
         return super.checkSpecificConditions(user, power, target);
     }
 
-    private boolean projectileList(ItemStack item) {
+    public static boolean projectileList(ItemStack item, LivingEntity user) {
+        ItemStack mainItem = user.getMainHandItem();
         return
                 item.getItem() instanceof ArrowItem ||
                 item.getItem() instanceof ThrowablePotionItem ||
                 item.getItem() instanceof KnifeItem ||
+                (item.getItem() == ModItems.MOLOTOV.get() && mainItem.getItem() == Items.FLINT_AND_STEEL) ||
                 item.getItem() == ModItems.BLADE_HAT.get() ||
                 item.getItem() == Items.TRIDENT ||
                 item.getItem() == Items.IRON_NUGGET ||
@@ -79,7 +84,7 @@ public class KraftWorkPlaceProjectile extends StandAction {
                 item.getItem() == Items.EXPERIENCE_BOTTLE;
     }
 
-    private boolean ineffectiveItems(Item item) {
+    public static boolean ineffectiveItems(Item item) {
         return
                 item == Items.OAK_SAPLING ||
                 item == Items.SPRUCE_SAPLING ||
@@ -108,7 +113,7 @@ public class KraftWorkPlaceProjectile extends StandAction {
                 item == Items.DRAGON_EGG;
     }
 
-    private boolean weakItems(Item item) {
+    public static boolean weakItems(Item item) {
         return
                 item == Items.RABBIT_HIDE ||
                 item == Items.RABBIT_FOOT ||
@@ -146,7 +151,7 @@ public class KraftWorkPlaceProjectile extends StandAction {
                 item instanceof SpawnEggItem;
     }
 
-    private boolean uselessItems(Item item) {
+    public static boolean uselessItems(Item item) {
         return
                 item instanceof DyeItem ||
                 item == Items.BONE_MEAL ||
@@ -157,7 +162,7 @@ public class KraftWorkPlaceProjectile extends StandAction {
                 item == Items.BLAZE_POWDER;
     }
 
-    private boolean hardMaterial(BlockState blockState) {
+    public static boolean hardMaterial(BlockState blockState) {
         Material material = blockState.getMaterial();
         return
                 material == Material.BUILDABLE_GLASS ||
@@ -172,7 +177,7 @@ public class KraftWorkPlaceProjectile extends StandAction {
                 material == Material.CLAY && blockState.getBlock().getRegistryName().getPath().contains("infested");
     }
 
-    private boolean ineffectiveMaterial(BlockState blockState) {
+    public static boolean ineffectiveMaterial(BlockState blockState) {
         Material material = blockState.getMaterial();
         return
                 material == Material.DECORATION ||
@@ -183,7 +188,7 @@ public class KraftWorkPlaceProjectile extends StandAction {
                 material == Material.VEGETABLE;
     }
 
-    private boolean weakMaterial(BlockState blockState) {
+    public static boolean weakMaterial(BlockState blockState) {
         Material material = blockState.getMaterial();
         return
                 material == Material.CLOTH_DECORATION ||
@@ -205,302 +210,380 @@ public class KraftWorkPlaceProjectile extends StandAction {
                 material == Material.CAKE;
     }
 
+    public static boolean doNotRemove(Item proItem, ItemStack item) {
+        return
+                proItem == Items.SLIME_BLOCK || proItem == Items.TOTEM_OF_UNDYING ||
+                proItem == Items.ENCHANTED_GOLDEN_APPLE ||
+                proItem == Items.NETHER_STAR ||
+                proItem == Items.NETHERITE_INGOT ||
+                proItem == Items.NETHERITE_SCRAP ||
+                proItem == Items.SHULKER_BOX ||
+                proItem == Items.BEACON ||
+                proItem == Items.DRAGON_EGG ||
+                proItem instanceof TieredItem ||
+                proItem instanceof ShootableItem ||
+                proItem instanceof ArmorItem ||
+                proItem instanceof HorseArmorItem ||
+                (proItem.getUseDuration(item) > 0 &&
+                !(proItem instanceof PotionItem) &&
+                !proItem.isEdible());
+    }
+
+    public static boolean removeOnImpact(Item item){
+        return
+                item instanceof PotionItem ||
+                item == Items.TORCH ||
+                item == Items.SOUL_TORCH ||
+                item == Items.REDSTONE_TORCH ||
+                item == Items.CAMPFIRE ||
+                item == Items.SOUL_CAMPFIRE ||
+                item == Items.GLASS ||
+                item == Items.GLASS_PANE ||
+                item == Items.GLASS_BOTTLE ||
+                item == Items.PRISMARINE_CRYSTALS ||
+                item == Items.SEA_LANTERN ||
+                item == Items.MILK_BUCKET ||
+                item == Items.BEE_NEST ||
+                item == Items.END_CRYSTAL ||
+                item instanceof BucketItem ||
+                item instanceof SpawnEggItem;
+    }
+
     @Override
     protected void perform(World world, LivingEntity user, IStandPower power, ActionTarget target) {
         if (!world.isClientSide()) {
             ItemStack item = user.getOffhandItem();
-            Vector3d userView = user.getViewVector(1.0F);
-            int itemsToThrow = 1;
-            PlayerEntity player = (PlayerEntity) user;
-            String lock_id = String.valueOf(user.getUUID());
-            if (projectileList(item)) {
-                Item proItem = item.getItem();
-                if (proItem instanceof ArrowItem) {
-                    ArrowItem arrowItem = (ArrowItem) proItem;
-                    AbstractArrowEntity arrow = arrowItem.createArrow(world, item, user);
-                    arrow.setPos(arrow.getX() + userView.x * 0.75D, user.getY(0.5D) + 0.5D, arrow.getZ() + userView.z * 0.75D);
-                    arrow.shootFromRotation(user, user.xRot, user.yRot, 0.0F, 1.5F, 1.0F);
-                    arrow.setBaseDamage(arrow.getBaseDamage() / 6);
-                    TagServerSide(arrow, lock_id, true);
-                    if (player.abilities.instabuild) {
+            placeProjectile(world, user, user, item, power);
+        }
+    }
+
+    public static void placeProjectile(World world, LivingEntity user, LivingEntity itemOwner, ItemStack item, IStandPower power) {
+        Vector3d userView = itemOwner.getViewVector(1.0F);
+        ItemStack mainItem = user.getMainHandItem();
+        int itemsToThrow = 1;
+        String lock_id = String.valueOf(user.getUUID());
+        if (projectileList(item, itemOwner)) {
+            Item proItem = item.getItem();
+            if (proItem instanceof ArrowItem) {
+                ArrowItem arrowItem = (ArrowItem) proItem;
+                AbstractArrowEntity arrow = arrowItem.createArrow(world, item, itemOwner);
+                arrow.setPos(arrow.getX() + userView.x * 0.75D, itemOwner.getY(0.5D) + 0.5D, arrow.getZ() + userView.z * 0.75D);
+                arrow.shootFromRotation(itemOwner, itemOwner.xRot, itemOwner.yRot, 0.0F, 1.5F, 1.0F);
+                arrow.setBaseDamage(arrow.getBaseDamage() / 6);
+                arrow.setOwner(user);
+                TagServerSide(arrow, lock_id, true);
+                if (itemOwner instanceof PlayerEntity) {
+                    if (((PlayerEntity)itemOwner).abilities.instabuild) {
                         arrow.pickup = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
                     }
-                    world.addFreshEntity(arrow);
-                    setCanUpdateServerSide(arrow, false);
-                    setPositionLockingServerSide(arrow, true);
-                    player.getCooldowns().addCooldown(proItem, 3);
+                    ((PlayerEntity)itemOwner).getCooldowns().addCooldown(proItem, 3);
                 }
-                if (proItem instanceof ThrowablePotionItem) {
-                    PotionEntity potion = new PotionEntity(world, user);
-                    potion.setItem(item);
-                    potion.setPos(potion.getX() + userView.x * 0.5D, user.getY(0.5D) + 0.5D, potion.getZ() + userView.z * 0.5D);
-                    potion.shootFromRotation(user, user.xRot, user.yRot, 0.0F, 1.5F, 1.0F);
-                    TagServerSide(potion, lock_id, true);
-                    world.addFreshEntity(potion);
-                    setCanUpdateServerSide(potion, false);
-                    setPositionLockingServerSide(potion, true);
-                    player.getCooldowns().addCooldown(proItem, 3);
+                world.addFreshEntity(arrow);
+                setCanUpdateServerSide(arrow, false);
+                setPositionLockingServerSide(arrow, true);
+            }
+            if (proItem instanceof ThrowablePotionItem) {
+                PotionEntity potion = new PotionEntity(world, itemOwner);
+                potion.setItem(item);
+                potion.setPos(potion.getX() + userView.x * 0.5D, itemOwner.getY(0.5D) + 0.5D, potion.getZ() + userView.z * 0.5D);
+                potion.shootFromRotation(itemOwner, itemOwner.xRot, itemOwner.yRot, 0.0F, 1.5F, 1.0F);
+                potion.setOwner(user);
+                TagServerSide(potion, lock_id, true);
+                world.addFreshEntity(potion);
+                setCanUpdateServerSide(potion, false);
+                setPositionLockingServerSide(potion, true);
+                if (itemOwner instanceof PlayerEntity) {
+                    ((PlayerEntity)itemOwner).getCooldowns().addCooldown(proItem, 3);
                 }
-                if (proItem instanceof KnifeItem) {
-                    KnifeItem knifeItem = (KnifeItem) proItem;
-                    if (power.getResolveLevel() >= 3) {
-                        itemsToThrow = !user.isShiftKeyDown() ? Math.min(item.getCount(), knifeItem.MAX_KNIVES_THROW) : 1;
-                    }
+            }
+            if (proItem instanceof KnifeItem) {
+                KnifeItem knifeItem = (KnifeItem) proItem;
+                if (power.getResolveLevel() >= 3) {
+                    itemsToThrow = !itemOwner.isShiftKeyDown() ? Math.min(item.getCount(), knifeItem.MAX_KNIVES_THROW) : 1;
+                }
 
-                    for (int i = 0; i < itemsToThrow; i++) {
-                        int flightTicks = 0;
-                        if (!user.isShiftKeyDown() && power.getResolveLevel() >= 3) {
-                            flightTicks = 1;
-                        }
-                        KnifeEntity knife = new KnifeEntity(world, user);
-                        if (flightTicks == 0) {
-                            knife.setPos(knife.getX() + userView.x * 0.5D, user.getY(0.5D) + 0.5D, knife.getZ() + userView.z * 0.5D);
-                        }
-                        knife.setTimeStopFlightTicks(flightTicks);
-                        knife.shootFromRotation(user, 1.5F, i == 0 ? 1.0F : 16.0F);
-                        knife.setBaseDamage(knife.getBaseDamage() / 6);
-                        TagServerSide(knife, lock_id, true);
-                        world.addFreshEntity(knife);
-                        setCanUpdateServerSide(knife, false);
-                        setPositionLockingServerSide(knife, true);
+                for (int i = 0; i < itemsToThrow; i++) {
+                    int flightTicks = 0;
+                    if (!itemOwner.isShiftKeyDown() && power.getResolveLevel() >= 3 && !(itemOwner instanceof StandEntity)) {
+                        flightTicks = 1;
                     }
+                    KnifeEntity knife = new KnifeEntity(world, itemOwner);
+                    if (flightTicks == 0) {
+                        knife.setPos(knife.getX() + userView.x * 0.5D, itemOwner.getY(0.5D) + 0.5D, knife.getZ() + userView.z * 0.5D);
+                    }
+                    knife.setTimeStopFlightTicks(flightTicks);
+                    knife.shootFromRotation(itemOwner, 1.5F, i == 0 ? 1.0F : 16.0F);
+                    knife.setBaseDamage(knife.getBaseDamage() / 6);
+                    knife.setOwner(user);
+                    TagServerSide(knife, lock_id, true);
+                    world.addFreshEntity(knife);
+                    setCanUpdateServerSide(knife, false);
+                    setPositionLockingServerSide(knife, true);
+                }
 
-                    if (power.getResolveLevel() >= 3 && !user.isShiftKeyDown()) {
-                        world.playSound(null, user.getX(), user.getY(), user.getZ(),
-                                itemsToThrow == 1 ? ModSounds.KNIFE_THROW.get() : ModSounds.KNIVES_THROW.get(),
-                                SoundCategory.PLAYERS, 0 * 0.5F, 0.4F / (world.random.nextFloat() * 0.4F + 0.8F));
-                    }
-                    int cooldown = itemsToThrow * 3;
-                    player.getCooldowns().addCooldown(proItem, cooldown);
+                if (power.getResolveLevel() >= 3 && !itemOwner.isShiftKeyDown() && !(itemOwner instanceof StandEntity)) {
+                    world.playSound(null, user.getX(), user.getY(), user.getZ(),
+                            itemsToThrow == 1 ? ModSounds.KNIFE_THROW.get() : ModSounds.KNIVES_THROW.get(),
+                            SoundCategory.PLAYERS, 0 * 0.5F, 0.4F / (world.random.nextFloat() * 0.4F + 0.8F));
                 }
-                if (proItem == ModItems.BLADE_HAT.get()) {
-                    BladeHatEntity hat = new BladeHatEntity(world, user, item);
-                    hat.setPos(hat.getX(), user.getY(0.5D) + 0.5D, hat.getZ() + userView.z * 0.75D);
-                    hat.shootFromRotation(user, 1.5F, 0.5F);
-                    hat.setBaseDamage(hat.getBaseDamage() / 6);
-                    TagServerSide(hat, lock_id, true);
-                    world.addFreshEntity(hat);
-                    setCanUpdateServerSide(hat, false);
-                    setPositionLockingServerSide(hat, true);
-                    player.getCooldowns().addCooldown(proItem, 3);
+                int cooldown = itemsToThrow * 3;
+                if (itemOwner instanceof PlayerEntity) {
+                    ((PlayerEntity)itemOwner).getCooldowns().addCooldown(proItem, cooldown);
                 }
-                if (proItem == Items.TRIDENT) {
-                    TridentItem tridentItem = (TridentItem) proItem;
-                    int i = tridentItem.getUseDuration(item) - user.getUseItemRemainingTicks();
-                    if (i >= 10) {
-                        int j = EnchantmentHelper.getRiptide(item);
-                        if (j <= 0 || player.isInWaterOrRain()) {
-                            item.hurtAndBreak(1, player, (PUser) -> {
-                                PUser.broadcastBreakEvent(player.getUsedItemHand());
-                            });
-                            TridentEntity trident = new TridentEntity(world, player, item);
-                            trident.setPos(trident.getX(), user.getY(0.5D) + 0.5D, trident.getZ() + userView.z * 0.75D);
-                            trident.shootFromRotation(user, user.xRot, user.yRot, 0.0F, 2.5F + (float)j * 0.5F, 1.0F);
-                            trident.setBaseDamage(trident.getBaseDamage() / 6);
-                            TagServerSide(trident, lock_id, true);
+            }
+            if (proItem == ModItems.MOLOTOV.get() && mainItem.getItem() == Items.FLINT_AND_STEEL) {
+                MolotovEntity molotov = new MolotovEntity(world, itemOwner);
+                molotov.setItem(item);
+                molotov.shootFromRotation(itemOwner, itemOwner.xRot, itemOwner.yRot, 0.0F, 0.75F, 1.0F);
+                TagServerSide(molotov, lock_id, true);
+                world.addFreshEntity(molotov);
+                setCanUpdateServerSide(molotov, false);
+                setPositionLockingServerSide(molotov, true);
+                if (itemOwner instanceof PlayerEntity) {
+                    ((PlayerEntity)itemOwner).awardStat(Stats.ITEM_USED.get(proItem));
+                    ((PlayerEntity)itemOwner).getCooldowns().addCooldown(proItem, 3);
+                }
+                mainItem.hurtAndBreak(1, itemOwner, (PUser) -> {
+                    PUser.broadcastBreakEvent(itemOwner.getUsedItemHand());
+                });
+
+                if (!itemOwner.isSilent()) {
+                    itemOwner.playSound(ModSounds.MOLOTOV_THROW.get(), 0.5F, 0.4F / (world.random.nextFloat() * 0.4F + 0.8F));
+                }
+            }
+            if (proItem == ModItems.BLADE_HAT.get()) {
+                BladeHatEntity hat = new BladeHatEntity(world, itemOwner, item);
+                hat.setPos(hat.getX(), itemOwner.getY(0.5D) + 0.5D, hat.getZ() + userView.z * 0.75D);
+                hat.shootFromRotation(itemOwner, 1.5F, 0.5F);
+                hat.setBaseDamage(hat.getBaseDamage() / 6);
+                hat.setOwner(user);
+                TagServerSide(hat, lock_id, true);
+                world.addFreshEntity(hat);
+                setCanUpdateServerSide(hat, false);
+                setPositionLockingServerSide(hat, true);
+                if (itemOwner instanceof PlayerEntity) {
+                    ((PlayerEntity)itemOwner).getCooldowns().addCooldown(proItem, 3);
+                }
+            }
+            if (proItem == Items.TRIDENT) {
+                TridentItem tridentItem = (TridentItem) proItem;
+                int i = tridentItem.getUseDuration(item) - itemOwner.getUseItemRemainingTicks();
+                if (i >= 10) {
+                    int j = EnchantmentHelper.getRiptide(item);
+                    if (j <= 0 || itemOwner.isInWaterOrRain()) {
+                        item.hurtAndBreak(1, itemOwner, (PUser) -> {
+                            PUser.broadcastBreakEvent(itemOwner.getUsedItemHand());
+                        });
+                        TridentEntity trident = new TridentEntity(world, itemOwner, item);
+                        trident.setPos(trident.getX(), itemOwner.getY(0.5D) + 0.5D, trident.getZ() + userView.z * 0.75D);
+                        trident.shootFromRotation(itemOwner, itemOwner.xRot, itemOwner.yRot, 0.0F, 2.5F + (float)j * 0.5F, 1.0F);
+                        trident.setBaseDamage(trident.getBaseDamage() / 6);
+                        trident.setOwner(user);
+                        TagServerSide(trident, lock_id, true);
+                        if (itemOwner instanceof PlayerEntity) {
+                            PlayerEntity player = (PlayerEntity) itemOwner;
                             if (player.abilities.instabuild) {
                                 trident.pickup = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
                             }
-                            world.addFreshEntity(trident);
-                            setCanUpdateServerSide(trident, false);
-                            setPositionLockingServerSide(trident, true);
                             player.getCooldowns().addCooldown(proItem, 5);
                             player.awardStat(Stats.ITEM_USED.get(proItem));
                         }
+                        world.addFreshEntity(trident);
+                        setCanUpdateServerSide(trident, false);
+                        setPositionLockingServerSide(trident, true);
                     }
-                }
-                if (proItem == Items.IRON_NUGGET) {
-                    TommyGunBulletEntity bullet = new TommyGunBulletEntity(user, world);
-                    bullet.setPos(bullet.getX() + userView.x * 0.5D, user.getY(0.5D) + 0.5D, bullet.getZ() + userView.z * 0.5D);
-                    bullet.shootFromRotation(user, 1.5F, 0.0F);
-                    TagServerSide(bullet, lock_id, true);
-                    world.addFreshEntity(bullet);
-                    setCanUpdateServerSide(bullet, false);
-                    setPositionLockingServerSide(bullet, true);
-                    player.getCooldowns().addCooldown(proItem, 3);
-                }
-                if (proItem == Items.FIRE_CHARGE) {
-                    double d0 = user.getX() + (userView.x * 0.3F);
-                    double d1 = user.getY() + (userView.y * 0.3F);
-                    double d2 = user.getZ() + (userView.z * 0.3F);
-                    double d3 = userView.x;
-                    double d4 = userView.y;
-                    double d5 = userView.z;
-                    SmallFireballEntity fireBall = new SmallFireballEntity(world, d0, d1, d2, d3, d4, d5);
-                    fireBall.setPos(fireBall.getX() + userView.x * 0.5D, user.getY(0.5D) + 0.5D, fireBall.getZ() + userView.z * 0.5D);
-                    fireBall.shootFromRotation(user, user.xRot, user.yRot, 0.0F, 1.5F, 1.0F);
-                    fireBall.setOwner(user);
-                    TagServerSide(fireBall, lock_id, true);
-                    world.addFreshEntity(fireBall);
-                    setCanUpdateServerSide(fireBall, false);
-                    setPositionLockingServerSide(fireBall, true);
-                    player.getCooldowns().addCooldown(proItem, 10);
-                }
-                if (proItem == Items.FIREWORK_ROCKET) {
-                    FireworkRocketEntity firework = new FireworkRocketEntity(world, item, user, user.getX(), user.getEyeY() - (double)0.15F, user.getZ(), true);
-                    firework.setPos(firework.getX() + userView.x * 0.5D, user.getY(0.5D) + 0.5D, firework.getZ() + userView.z * 0.5D);
-                    firework.shootFromRotation(user, user.xRot, user.yRot, 0.0F, 1.5F, 1.0F);
-                    TagServerSide(firework, lock_id, true);
-                    world.addFreshEntity(firework);
-                    setCanUpdateServerSide(firework, false);
-                    setPositionLockingServerSide(firework, true);
-                    player.getCooldowns().addCooldown(proItem, 10);
-                }
-                if (proItem == Items.ENDER_PEARL) {
-                    EnderPearlEntity enderPearl = new EnderPearlEntity(world, user);
-                    enderPearl.setItem(item);
-                    enderPearl.setPos(enderPearl.getX() + userView.x * 0.5D, user.getY(0.5D) + 0.5D, enderPearl.getZ() + userView.z * 0.5D);
-                    enderPearl.shootFromRotation(user, user.xRot, user.yRot, 0.0F, 1.5F, 1.0F);
-                    TagServerSide(enderPearl, lock_id, true);
-                    world.addFreshEntity(enderPearl);
-                    setCanUpdateServerSide(enderPearl, false);
-                    setPositionLockingServerSide(enderPearl, true);
-                    player.getCooldowns().addCooldown(proItem, 20);
-                    player.awardStat(Stats.ITEM_USED.get(proItem));
-                }
-                if (proItem == Items.SNOWBALL) {
-                    SnowballEntity snowBall = new SnowballEntity(world, user);
-                    snowBall.setItem(item);
-                    snowBall.setPos(snowBall.getX() + userView.x * 0.5D, user.getY(0.5D) + 0.5D, snowBall.getZ() + userView.z * 0.5D);
-                    snowBall.shootFromRotation(user, user.xRot, user.yRot, 0.0F, 1.5F, 1.0F);
-                    TagServerSide(snowBall, lock_id, true);
-                    world.addFreshEntity(snowBall);
-                    setCanUpdateServerSide(snowBall, false);
-                    setPositionLockingServerSide(snowBall, true);
-                    player.getCooldowns().addCooldown(proItem, 3);
-                    player.awardStat(Stats.ITEM_USED.get(proItem));
-                }
-                if (proItem == Items.EGG) {
-                    EggEntity egg = new EggEntity(world, user);
-                    egg.setItem(item);
-                    egg.setPos(egg.getX() + userView.x * 0.5D, user.getY(0.5D) + 0.5D, egg.getZ() + userView.z * 0.5D);
-                    egg.shootFromRotation(user, user.xRot, user.yRot, 0.0F, 0.75F, 1.0F);
-                    egg.setOwner(user);
-                    TagServerSide(egg, lock_id, true);
-                    world.addFreshEntity(egg);
-                    setCanUpdateServerSide(egg, false);
-                    setPositionLockingServerSide(egg, true);
-                    player.getCooldowns().addCooldown(proItem, 3);
-                    player.awardStat(Stats.ITEM_USED.get(proItem));
-                }
-                if (proItem == Items.EXPERIENCE_BOTTLE) {
-                    ExperienceBottleEntity exp = new ExperienceBottleEntity(world, user);
-                    exp.setItem(item);
-                    exp.setPos(exp.getX() + userView.x * 0.5D, user.getY(0.5D) + 0.5D, exp.getZ() + userView.z * 0.5D);
-                    exp.shootFromRotation(user, user.xRot, user.yRot, 0.0F, 0.75F, 1.0F);
-                    exp.setOwner(user);
-                    TagServerSide(exp, lock_id, true);
-                    world.addFreshEntity(exp);
-                    setCanUpdateServerSide(exp, false);
-                    setPositionLockingServerSide(exp, true);
-                    player.getCooldowns().addCooldown(proItem, 3);
                 }
             }
-            else if (item.getItem() != Items.ENDER_EYE) {
-                Item proItem = item.getItem();
-                KWItemEntity projectileItem = new KWItemEntity(user, world);
-                projectileItem.setItem(item);
-                if (!(item.getItem() instanceof BlockItem)) {
-                    if (ineffectiveItems(proItem)) {
-                        projectileItem.setBaseDamage(projectileItem.getBaseDamage() / 2);
-                    }
-                    if (weakItems(proItem) && !ineffectiveItems(proItem)) {
-                        projectileItem.setBaseDamage(0);
-                    }
+            if (proItem == Items.IRON_NUGGET) {
+                TommyGunBulletEntity bullet = new TommyGunBulletEntity(itemOwner, world);
+                bullet.setPos(bullet.getX() + userView.x * 0.5D, itemOwner.getY(0.5D) + 0.5D, bullet.getZ() + userView.z * 0.5D);
+                bullet.shootFromRotation(itemOwner, 1.5F, 0.0F);
+                bullet.setOwner(user);
+                TagServerSide(bullet, lock_id, true);
+                world.addFreshEntity(bullet);
+                setCanUpdateServerSide(bullet, false);
+                setPositionLockingServerSide(bullet, true);
+                if (itemOwner instanceof PlayerEntity) {
+                    ((PlayerEntity)itemOwner).getCooldowns().addCooldown(proItem, 3);
                 }
-                else {
-                    Block block = ((BlockItem) proItem).getBlock();
-                    BlockState blockState = block.defaultBlockState();
-                    if (ineffectiveMaterial(blockState) || ineffectiveItems(proItem)) {
-                        projectileItem.setBaseDamage(projectileItem.getBaseDamage() / 2);
-                    }
-                    if (weakMaterial(blockState) && !hardMaterial(blockState) &&
-                            !ineffectiveMaterial(blockState) && !ineffectiveItems(proItem)) {
-                        projectileItem.setBaseDamage(0);
-                    }
+            }
+            if (proItem == Items.FIRE_CHARGE) {
+                double d0 = itemOwner.getX() + (userView.x * 0.3F);
+                double d1 = itemOwner.getY() + (userView.y * 0.3F);
+                double d2 = itemOwner.getZ() + (userView.z * 0.3F);
+                double d3 = userView.x;
+                double d4 = userView.y;
+                double d5 = userView.z;
+                SmallFireballEntity fireBall = new SmallFireballEntity(world, d0, d1, d2, d3, d4, d5);
+                fireBall.setPos(fireBall.getX() + userView.x * 0.5D, itemOwner.getY(0.5D) + 0.5D, fireBall.getZ() + userView.z * 0.5D);
+                fireBall.shootFromRotation(itemOwner, itemOwner.xRot, itemOwner.yRot, 0.0F, 1.5F, 1.0F);
+                fireBall.setOwner(user);
+                TagServerSide(fireBall, lock_id, true);
+                world.addFreshEntity(fireBall);
+                setCanUpdateServerSide(fireBall, false);
+                setPositionLockingServerSide(fireBall, true);
+                if (itemOwner instanceof PlayerEntity) {
+                    ((PlayerEntity)itemOwner).getCooldowns().addCooldown(proItem, 10);
                 }
-                if (proItem == Items.SLIME_BLOCK ||
-                    proItem == Items.TOTEM_OF_UNDYING ||
-                    proItem == Items.ENCHANTED_GOLDEN_APPLE ||
-                    proItem == Items.NETHER_STAR ||
-                    proItem == Items.NETHERITE_INGOT ||
-                    proItem == Items.NETHERITE_SCRAP ||
-                    proItem == Items.SHULKER_BOX ||
-                    proItem == Items.BEACON ||
-                    proItem == Items.DRAGON_EGG ||
-                    proItem instanceof TieredItem ||
-                    proItem instanceof ShootableItem ||
-                    proItem instanceof ArmorItem ||
-                    proItem instanceof HorseArmorItem ||
-                    (proItem.getUseDuration(item) > 0 &&
-                     !(proItem instanceof PotionItem) &&
-                     !proItem.isEdible())) {
-                    projectileItem.setRemoveItem(false);
-                    if (proItem instanceof ToolItem && !(proItem instanceof HoeItem)) {
-                        ToolItem tool = (ToolItem) proItem;
-                        projectileItem.setBaseDamage(tool.getAttackDamage());
-                        if (proItem instanceof AxeItem) {
-                            projectileItem.setBaseDamage(projectileItem.getBaseDamage() - 1);
-                        }
-                    }
-                    else if (proItem instanceof SwordItem) {
-                        SwordItem sword = (SwordItem) proItem;
-                        projectileItem.setBaseDamage(sword.getDamage() - 1);
-                    }
+            }
+            if (proItem == Items.FIREWORK_ROCKET) {
+                FireworkRocketEntity firework = new FireworkRocketEntity(world, item, itemOwner, itemOwner.getX(), itemOwner.getEyeY() - (double)0.15F, itemOwner.getZ(), true);
+                firework.setPos(firework.getX() + userView.x * 0.5D, itemOwner.getY(0.5D) + 0.5D, firework.getZ() + userView.z * 0.5D);
+                firework.shootFromRotation(itemOwner, itemOwner.xRot, itemOwner.yRot, 0.0F, 1.5F, 1.0F);
+                firework.setOwner(user);
+                TagServerSide(firework, lock_id, true);
+                world.addFreshEntity(firework);
+                setCanUpdateServerSide(firework, false);
+                setPositionLockingServerSide(firework, true);
+                if (itemOwner instanceof PlayerEntity) {
+                    ((PlayerEntity)itemOwner).getCooldowns().addCooldown(proItem, 10);
                 }
-                if (proItem instanceof PotionItem ||
-                    proItem == Items.TORCH ||
-                    proItem == Items.SOUL_TORCH ||
-                    proItem == Items.REDSTONE_TORCH ||
-                    proItem == Items.CAMPFIRE ||
-                    proItem == Items.SOUL_CAMPFIRE ||
-                    proItem == Items.GLASS ||
-                    proItem == Items.GLASS_PANE ||
-                    proItem == Items.GLASS_BOTTLE ||
-                    proItem == Items.PRISMARINE_CRYSTALS ||
-                    proItem == Items.SEA_LANTERN ||
-                    proItem == Items.MILK_BUCKET ||
-                    proItem == Items.BEE_NEST ||
-                    proItem == Items.END_CRYSTAL ||
-                    proItem instanceof BucketItem ||
-                    proItem instanceof SpawnEggItem) {
-                    projectileItem.removeAfterHitting(true);
+            }
+            if (proItem == Items.ENDER_PEARL) {
+                EnderPearlEntity enderPearl = new EnderPearlEntity(world, itemOwner);
+                enderPearl.setItem(item);
+                enderPearl.setPos(enderPearl.getX() + userView.x * 0.5D, itemOwner.getY(0.5D) + 0.5D, enderPearl.getZ() + userView.z * 0.5D);
+                enderPearl.shootFromRotation(itemOwner, itemOwner.xRot, itemOwner.yRot, 0.0F, 1.5F, 1.0F);
+                if (itemOwner instanceof StandEntity) {
+                    enderPearl.setOwner(((StandEntity)itemOwner).getUser());
                 }
-                if (proItem == Items.TOTEM_OF_UNDYING) {
-                    projectileItem.setBeneficial(true);
+                TagServerSide(enderPearl, lock_id, true);
+                world.addFreshEntity(enderPearl);
+                setCanUpdateServerSide(enderPearl, false);
+                setPositionLockingServerSide(enderPearl, true);
+                if (itemOwner instanceof PlayerEntity) {
+                    ((PlayerEntity)itemOwner).getCooldowns().addCooldown(proItem, 20);
+                    ((PlayerEntity)itemOwner).awardStat(Stats.ITEM_USED.get(proItem));
                 }
-                projectileItem.setPos(projectileItem.getX() + userView.x * 0.5D, user.getY(0.5D) + 0.5D, projectileItem.getZ() + userView.z * 0.5D);
-                projectileItem.shootFromRotation(user, user.xRot, user.yRot, 0.0F, 1.5F, 1.0F);
-                projectileItem.setBaseDamage(projectileItem.getBaseDamage() / 6);
-                TagServerSide(projectileItem, lock_id, true);
-                world.addFreshEntity(projectileItem);
-                setCanUpdateServerSide(projectileItem, false);
-                setPositionLockingServerSide(projectileItem, true);
-                player.getCooldowns().addCooldown(proItem, 3);
+            }
+            if (proItem == Items.SNOWBALL) {
+                SnowballEntity snowBall = new SnowballEntity(world, itemOwner);
+                snowBall.setItem(item);
+                snowBall.setPos(snowBall.getX() + userView.x * 0.5D, itemOwner.getY(0.5D) + 0.5D, snowBall.getZ() + userView.z * 0.5D);
+                snowBall.shootFromRotation(itemOwner, itemOwner.xRot, itemOwner.yRot, 0.0F, 1.5F, 1.0F);
+                snowBall.setOwner(user);
+                TagServerSide(snowBall, lock_id, true);
+                world.addFreshEntity(snowBall);
+                setCanUpdateServerSide(snowBall, false);
+                setPositionLockingServerSide(snowBall, true);
+                if (itemOwner instanceof PlayerEntity) {
+                    ((PlayerEntity)itemOwner).getCooldowns().addCooldown(proItem, 3);
+                    ((PlayerEntity)itemOwner).awardStat(Stats.ITEM_USED.get(proItem));
+                }
+            }
+            if (proItem == Items.EGG) {
+                EggEntity egg = new EggEntity(world, itemOwner);
+                egg.setItem(item);
+                egg.setPos(egg.getX() + userView.x * 0.5D, itemOwner.getY(0.5D) + 0.5D, egg.getZ() + userView.z * 0.5D);
+                egg.shootFromRotation(itemOwner, itemOwner.xRot, itemOwner.yRot, 0.0F, 0.75F, 1.0F);
+                egg.setOwner(user);
+                TagServerSide(egg, lock_id, true);
+                world.addFreshEntity(egg);
+                setCanUpdateServerSide(egg, false);
+                setPositionLockingServerSide(egg, true);
+                if (itemOwner instanceof PlayerEntity) {
+                    ((PlayerEntity)itemOwner).getCooldowns().addCooldown(proItem, 3);
+                    ((PlayerEntity)itemOwner).awardStat(Stats.ITEM_USED.get(proItem));
+                }
+            }
+            if (proItem == Items.EXPERIENCE_BOTTLE) {
+                ExperienceBottleEntity exp = new ExperienceBottleEntity(world, itemOwner);
+                exp.setItem(item);
+                exp.setPos(exp.getX() + userView.x * 0.5D, itemOwner.getY(0.5D) + 0.5D, exp.getZ() + userView.z * 0.5D);
+                exp.shootFromRotation(itemOwner, itemOwner.xRot, itemOwner.yRot, 0.0F, 0.75F, 1.0F);
+                exp.setOwner(user);
+                TagServerSide(exp, lock_id, true);
+                world.addFreshEntity(exp);
+                setCanUpdateServerSide(exp, false);
+                setPositionLockingServerSide(exp, true);
+                if (itemOwner instanceof PlayerEntity) {
+                    ((PlayerEntity)itemOwner).getCooldowns().addCooldown(proItem, 3);
+                }
+            }
+        }
+        else if (item.getItem() != Items.ENDER_EYE) {
+            Item proItem = item.getItem();
+            KWItemEntity projectileItem = new KWItemEntity(itemOwner, world);
+            projectileItem.setItem(item);
+            if (!(item.getItem() instanceof BlockItem)) {
+                if (ineffectiveItems(proItem)) {
+                    projectileItem.setBaseDamage(projectileItem.getBaseDamage() / 2);
+                }
+                if (weakItems(proItem) && !ineffectiveItems(proItem)) {
+                    projectileItem.setBaseDamage(0);
+                }
             }
             else {
-                if (world instanceof ServerWorld) {
-                    BlockPos blockpos = ((ServerWorld)world).getChunkSource().getGenerator().findNearestMapFeature((ServerWorld)world, Structure.STRONGHOLD, user.blockPosition(), 100, false);
-                    if (blockpos != null) {
-                        EyeOfEnderEntity eyeOfEnder = new EyeOfEnderEntity(world, user.getX(), user.getY(0.5D), user.getZ());
-                        eyeOfEnder.setItem(item);
-                        eyeOfEnder.signalTo(blockpos);
-                        TagServerSide(eyeOfEnder, lock_id, true);
-                        world.addFreshEntity(eyeOfEnder);
-                        setCanUpdateServerSide(eyeOfEnder, false);
-                        setPositionLockingServerSide(eyeOfEnder, true);
+                Block block = ((BlockItem) proItem).getBlock();
+                BlockState blockState = block.defaultBlockState();
+                if (ineffectiveMaterial(blockState) || ineffectiveItems(proItem)) {
+                    projectileItem.setBaseDamage(projectileItem.getBaseDamage() / 2);
+                }
+                if (weakMaterial(blockState) && !hardMaterial(blockState) &&
+                        !ineffectiveMaterial(blockState) && !ineffectiveItems(proItem)) {
+                    projectileItem.setBaseDamage(0);
+                }
+            }
+            if (doNotRemove(proItem, item)) {
+                projectileItem.setRemoveItem(false);
+                if (proItem instanceof ToolItem && !(proItem instanceof HoeItem)) {
+                    ToolItem tool = (ToolItem) proItem;
+                    projectileItem.setBaseDamage(tool.getAttackDamage());
+                    if (proItem instanceof AxeItem) {
+                        projectileItem.setBaseDamage(projectileItem.getBaseDamage() - 1);
+                    }
+                }
+                else if (proItem instanceof SwordItem) {
+                    SwordItem sword = (SwordItem) proItem;
+                    projectileItem.setBaseDamage(sword.getDamage() - 1);
+                }
+                else if (proItem instanceof ArmorItem && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.THORNS, item) > 0) {
+                    projectileItem.setBaseDamage(projectileItem.getBaseDamage() + 1);
+                }
+            }
+            if (removeOnImpact(proItem)) {
+                projectileItem.removeAfterHitting(true);
+            }
+            if (proItem == Items.TOTEM_OF_UNDYING) {
+                projectileItem.setBeneficial(true);
+            }
+            projectileItem.setPos(projectileItem.getX() + userView.x * 0.5D, itemOwner.getY(0.5D) + 0.5D, projectileItem.getZ() + userView.z * 0.5D);
+            projectileItem.shootFromRotation(itemOwner, itemOwner.xRot, itemOwner.yRot, 0.0F, 1.5F, 1.0F);
+            projectileItem.setBaseDamage(projectileItem.getBaseDamage() / 6);
+            projectileItem.setOwner(user);
+            TagServerSide(projectileItem, lock_id, true);
+            world.addFreshEntity(projectileItem);
+            setCanUpdateServerSide(projectileItem, false);
+            setPositionLockingServerSide(projectileItem, true);
+            if (itemOwner instanceof PlayerEntity) {
+                ((PlayerEntity)itemOwner).getCooldowns().addCooldown(proItem, 3);
+            }
+        }
+        else {
+            if (world instanceof ServerWorld) {
+                BlockPos blockpos = ((ServerWorld)world).getChunkSource().getGenerator().findNearestMapFeature((ServerWorld)world, Structure.STRONGHOLD, itemOwner.blockPosition(), 100, false);
+                if (blockpos != null) {
+                    EyeOfEnderEntity eyeOfEnder = new EyeOfEnderEntity(world, itemOwner.getX(), itemOwner.getY(0.5D), itemOwner.getZ());
+                    eyeOfEnder.setItem(item);
+                    eyeOfEnder.signalTo(blockpos);
+                    TagServerSide(eyeOfEnder, lock_id, true);
+                    world.addFreshEntity(eyeOfEnder);
+                    setCanUpdateServerSide(eyeOfEnder, false);
+                    setPositionLockingServerSide(eyeOfEnder, true);
+                    if (itemOwner instanceof PlayerEntity) {
+                        PlayerEntity player = (PlayerEntity) itemOwner;
                         if (player instanceof ServerPlayerEntity) {
                             CriteriaTriggers.USED_ENDER_EYE.trigger((ServerPlayerEntity)player, blockpos);
                         }
-                        world.levelEvent((PlayerEntity)null, 1003, user.blockPosition(), 0);
                         player.awardStat(Stats.ITEM_USED.get(item.getItem()));
                         player.getCooldowns().addCooldown(item.getItem(), 3);
                     }
+                    world.levelEvent((PlayerEntity)null, 1003, itemOwner.blockPosition(), 0);
                 }
             }
-            if (!player.abilities.instabuild) {
-                item.shrink(itemsToThrow);
-            }
+        }
+        if (!(itemOwner instanceof PlayerEntity && ((PlayerEntity)itemOwner).abilities.instabuild)) {
+            item.shrink(itemsToThrow);
         }
     }
 
@@ -538,7 +621,7 @@ public class KraftWorkPlaceProjectile extends StandAction {
 
     private boolean isNotAProjectile(IStandPower power) {
         ItemStack item = power.getUser().getOffhandItem();
-        return power.getUser() != null && !projectileList(item);
+        return power.getUser() != null && !projectileList(item, power.getUser());
     }
 
 

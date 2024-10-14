@@ -74,7 +74,7 @@ public class InitStands {
                     .shiftVariationOf(KRAFT_WORK_LOCK_TARGET)));
 
     public static final RegistryObject<StandEntityAction> KRAFT_WORK_ENERGY_ACCUMULATION = ACTIONS.register("kraft_work_energy_accumulation",
-            () -> new KraftWorkEnergyAccumulation(new StandEntityAction.Builder().staminaCostTick(0.1F).standUserWalkSpeed(0.0F).holdType()
+            () -> new KraftWorkEnergyAccumulation(new StandEntityAction.Builder().staminaCostTick(1F).standUserWalkSpeed(0.0F)
                     .resolveLevelToUnlock(2)
                     .standOffsetFront().standPose(KraftWorkEnergyAccumulation.GIVE_ENERGY_POSE)
                     .partsRequired(StandPart.ARMS)));
@@ -142,10 +142,10 @@ public class InitStands {
                             )
                             .defaultStats(StandStats.class, new StandStats.Builder()
                                     .power(14.0)
-                                    .speed(14.0)
+                                    .speed(14.0, 16.0)
                                     .range(2.0, 2.0)
                                     .durability(10.0)
-                                    .precision(2.0)
+                                    .precision(2.0, 4.5)
                                     .randomWeight(2)
                             )
                             .addSummonShout(InitSounds.SALE_KRAFT_WORK)
