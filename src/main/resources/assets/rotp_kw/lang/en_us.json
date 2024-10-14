@@ -21,7 +21,7 @@
   "action.rotp_kw.kraft_work_heavy_punch": "Heavy Punch",
   "action.rotp_kw.kraft_work_combo_punch": "Heavy Punch",
   "action.rotp_kw.kraft_work_lock_armor": "Lock Armor",
-  "action.rotp_kw.kraft_work_barrage": "Barrage",
+  "action.rotp_kw.kraft_work_barrage": "Punch Barrage",
   "action.rotp_kw.kraft_work_place_projectile": "Place projectile",
   "action.rotp_kw.kraft_work_place_projectile.item": "Place item",
   "action.rotp_kw.kraft_work_block": "Block",
@@ -39,5 +39,6 @@
   "jojo.message.action_condition.useless_item": "This item is not suitable for shooting",
   "jojo.message.action_condition.item_cooldown": "This item is on cooldown",
   "rotp_kw.subtitle.kraft_work_name": "\"Kraft Work\"",
-  "rotp_kw.subtitle.kraft_work_blocks_a_projectile": "Blocked projectile"
+  "rotp_kw.subtitle.kraft_work_blocks_a_projectile": "Blocked projectile",
+  "rotp_kw.subtitle.kraft_work_giving_kinetic_energy": "Something is being touched"
 }

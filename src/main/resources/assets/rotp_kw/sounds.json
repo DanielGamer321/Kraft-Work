@@ -7,6 +7,10 @@
     "subtitle": "rotp_kw.subtitle.kraft_work_blocks_a_projectile",
     "sounds": [ "rotp_kw:stand/kraft_work_blocks_a_projectile" ]
   },
+  "kraft_work_giving_kinetic_energy": {
+    "subtitle": "rotp_kw.subtitle.kraft_work_giving_kinetic_energy",
+    "sounds": [ "rotp_kw:stand/kraft_work_giving_kinetic_energy", "rotp_kw:stand/kraft_work_giving_kinetic_energy_2" ]
+  },
   "kraft_work_released_projectile": {
     "subtitle": "jojo.subtitle.shot",
     "sounds": [ "rotp_kw:stand/kraft_work_released_projectile", "rotp_kw:stand/kraft_work_released_projectile_2" ]
