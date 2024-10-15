@@ -3,6 +3,7 @@ package com.danielgamer321.rotp_kw.action.stand;
 import com.github.standobyte.jojo.action.stand.punch.StandEntityPunch;
 import com.github.standobyte.jojo.entity.stand.StandEntity;
 import com.github.standobyte.jojo.entity.stand.StandEntityTask;
+import com.github.standobyte.jojo.entity.stand.StandRelativeOffset;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.util.mc.damage.StandEntityDamageSource;
 
@@ -17,7 +18,7 @@ public class KraftWorkComboPunch extends KraftWorkHeavyPunch {
         super(builder);
     }
 
-    private static final double SLIDE_DISTANCE = 1.8;
+    private static final double SLIDE_DISTANCE = 2;
     @Override
     public void standTickWindup(World world, StandEntity standEntity, IStandPower userPower, StandEntityTask task) {
         int ticksLeft = task.getTicksLeft();
@@ -43,6 +44,11 @@ public class KraftWorkComboPunch extends KraftWorkHeavyPunch {
         double strength = stand.getAttackDamage();
         return super.punchEntity(stand, target, dmgSource)
                 .addKnockback(0.5F + (float) strength / 8);
+    }
+
+    @Override
+    public StandRelativeOffset getOffsetFromUser(IStandPower standPower, StandEntity standEntity, StandEntityTask task) {
+        return StandRelativeOffset.noYOffset(0, 0.5);
     }
 
     @Override
