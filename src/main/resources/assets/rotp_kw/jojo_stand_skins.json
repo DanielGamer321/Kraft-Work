@@ -3,6 +3,10 @@
     "rotp_kw:kraft_work": {
       "stand_type": "rotp_kw:kraft_work",
       "color" : "0xA4C686"
+    },
+    "rotp_kw:kraft_work_manga": { 
+      "stand_type": "rotp_kw:kraft_work",
+      "color" : "0xF9F9F9"
     }
   }
 }
