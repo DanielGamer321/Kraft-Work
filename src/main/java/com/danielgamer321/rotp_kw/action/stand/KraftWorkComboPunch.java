@@ -18,7 +18,7 @@ public class KraftWorkComboPunch extends KraftWorkHeavyPunch {
         super(builder);
     }
 
-    private static final double SLIDE_DISTANCE = 2;
+    private static final double SLIDE_DISTANCE = 1.5;
     @Override
     public void standTickWindup(World world, StandEntity standEntity, IStandPower userPower, StandEntityTask task) {
         int ticksLeft = task.getTicksLeft();

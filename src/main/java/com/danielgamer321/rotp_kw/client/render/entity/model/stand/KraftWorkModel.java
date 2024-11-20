@@ -75,9 +75,9 @@ public class KraftWorkModel extends HumanoidStandModel<KraftWorkEntity> {
 		rightArm.texOffs(12, 109).addBox(-1.0F, 2.5F, 1.6F, 2.0F, 2.0F, 1.0F, 0.0F, false);
 		rightArm.texOffs(45, 107).addBox(-0.5F, 3.0F, 2.1F, 1.0F, 1.0F, 1.0F, 0.01F, false);
 
-		rightForeArm.texOffs(0, 118).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 6.0F, 4.0F, -0.001F, false);
 		rightForeArm.texOffs(14, 117).addBox(-2.25F, 0.5F, -1.0F, 1.0F, 3.0F, 2.0F, -0.15F, false);
 		rightForeArm.texOffs(21, 117).addBox(1.25F, 0.5F, -1.0F, 1.0F, 3.0F, 2.0F, -0.15F, false);
+		rightForeArm.texOffs(10, 97).addBox(-2.5F, 5.1F, -2.0F, 1.0F, 1.0F, 4.0F, -0.2F, false);
 
 		leftLeg.texOffs(94, 119).addBox(-0.9F, 4.5F, -2.5F, 2.0F, 2.0F, 1.0F, 0.0F, true);
 
@@ -86,8 +86,8 @@ public class KraftWorkModel extends HumanoidStandModel<KraftWorkEntity> {
 
 		rightLeg.texOffs(62, 119).addBox(-1.1F, 4.5F, -2.5F, 2.0F, 2.0F, 1.0F, 0.0F, false);
 
+		rightLowerLeg.texOffs(85, 117).addBox(1.25F, 0.5F, -1.0F, 1.0F, 3.0F, 2.0F, -0.15F, false);
 		rightLowerLeg.texOffs(78, 117).addBox(-2.25F, 0.5F, -1.0F, 1.0F, 3.0F, 2.0F, -0.15F, false);
-		rightLowerLeg.texOffs(64, 118).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 6.0F, 4.0F, -0.001F, false);
 	}
 
 	@Override
