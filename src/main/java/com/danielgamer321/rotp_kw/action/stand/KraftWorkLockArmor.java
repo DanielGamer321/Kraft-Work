@@ -5,6 +5,7 @@ import com.danielgamer321.rotp_kw.init.InitEffects;
 import com.danielgamer321.rotp_kw.power.impl.stand.type.KraftWorkStandType;
 import com.github.standobyte.jojo.action.ActionConditionResult;
 import com.github.standobyte.jojo.action.ActionTarget;
+import com.github.standobyte.jojo.action.stand.StandEntityActionModifier;
 import com.github.standobyte.jojo.action.stand.punch.IPunch;
 import com.github.standobyte.jojo.action.stand.punch.StandEntityPunch;
 import com.github.standobyte.jojo.entity.stand.StandEntity;
@@ -27,7 +28,7 @@ import net.minecraft.item.ShieldItem;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.world.World;
 
-public class KraftWorkLockArmor extends KWActionModifier {
+public class KraftWorkLockArmor extends StandEntityActionModifier {
 
     public KraftWorkLockArmor(Builder builder) {
         super(builder);
@@ -169,4 +170,7 @@ public class KraftWorkLockArmor extends KWActionModifier {
     public void binding(LivingEntity user, Boolean status, ItemStack armor) {
         KraftWorkLockYourself.binding(user, status, armor);
     }
+
+
+    protected class TriggeredFlag {}
 }
