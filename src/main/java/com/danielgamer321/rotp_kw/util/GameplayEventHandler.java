@@ -15,8 +15,8 @@ import com.github.standobyte.jojo.entity.itemprojectile.StandArrowEntity;
 import com.github.standobyte.jojo.entity.stand.StandEntity;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.power.impl.stand.type.EntityStandType;
-
 import com.github.standobyte.jojo.util.mc.MCUtil;
+
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -44,10 +44,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.GameType;
 import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingConversionEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.living.PotionEvent;
+import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -65,6 +62,17 @@ import static com.danielgamer321.rotp_kw.action.stand.KraftWorkPlaceProjectile.p
 @EventBusSubscriber(modid = RotpKraftWorkAddon.MOD_ID)
 public class GameplayEventHandler {
 
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onLivingTick(LivingEvent.LivingUpdateEvent event) {
+        LivingEntity entity = event.getEntityLiving();
+        IStandPower.getStandPowerOptional(entity).ifPresent(power -> {
+            if (IStandPower.getStandPowerOptional(entity).map(stand -> !stand.hasPower() ||
+                    stand.getType() != AddonStands.KRAFT_WORK.getStandType()).orElse(false)) {
+                releaseFromLock(entity);
+            }
+        });
+    }
+
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         PlayerEntity player = event.player;
@@ -73,12 +81,6 @@ public class GameplayEventHandler {
             if (InitEffects.isLocked(player)) {
                 player.setSprinting(false);
             }
-            IStandPower.getStandPowerOptional(player).ifPresent(power -> {
-                if (IStandPower.getStandPowerOptional(player).map(stand -> !stand.hasPower() ||
-                        stand.getType() != AddonStands.KRAFT_WORK.getStandType()).orElse(false)) {
-                    releaseFromLock(player);
-                }
-            });
             break;
         }
     }
