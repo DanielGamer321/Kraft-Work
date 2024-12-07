@@ -49,6 +49,9 @@ public class KraftWorkPlaceProjectile extends StandAction {
 
     @Override
     protected ActionConditionResult checkSpecificConditions(LivingEntity user, IStandPower power, ActionTarget target) {
+        if (!(user instanceof PlayerEntity)) {
+            return ActionConditionResult.NEGATIVE;
+        }
         if (user.hasEffect(ModStatusEffects.IMMOBILIZE.get())) {
             return ActionConditionResult.NEGATIVE;
         }
