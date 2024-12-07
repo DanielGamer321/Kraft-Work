@@ -3,12 +3,14 @@ package com.danielgamer321.rotp_kw.action.stand;
 import com.danielgamer321.rotp_kw.capability.entity.LivingUtilCapProvider;
 import com.danielgamer321.rotp_kw.network.PacketManager;
 import com.danielgamer321.rotp_kw.network.packets.fromserver.TrSetLockStatusPacket;
+import com.github.standobyte.jojo.action.ActionConditionResult;
 import com.github.standobyte.jojo.action.ActionTarget;
 import com.github.standobyte.jojo.action.stand.StandAction;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.util.general.LazySupplier;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
@@ -18,6 +20,14 @@ import java.util.stream.Stream;
 public class KraftWorkBlockingItemsStatus extends StandAction {
     public KraftWorkBlockingItemsStatus(Builder builder) {
         super(builder);
+    }
+
+    @Override
+    protected ActionConditionResult checkSpecificConditions(LivingEntity user, IStandPower power, ActionTarget target) {
+        if (getStatus(power) && !(user instanceof PlayerEntity)) {
+            return ActionConditionResult.NEGATIVE;
+        }
+        return super.checkSpecificConditions(user, power, target);
     }
 
     @Override

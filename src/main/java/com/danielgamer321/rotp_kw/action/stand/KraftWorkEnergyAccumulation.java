@@ -4,6 +4,8 @@ import com.danielgamer321.rotp_kw.capability.entity.EntityUtilCapProvider;
 import com.danielgamer321.rotp_kw.capability.entity.ProjectileUtilCapProvider;
 import com.danielgamer321.rotp_kw.entity.damaging.projectile.KWItemEntity;
 import com.danielgamer321.rotp_kw.init.InitSounds;
+import com.github.standobyte.jojo.action.ActionConditionResult;
+import com.github.standobyte.jojo.action.ActionTarget;
 import com.github.standobyte.jojo.action.stand.StandEntityAction;
 import com.github.standobyte.jojo.entity.stand.StandEntity;
 import com.github.standobyte.jojo.entity.stand.StandEntityTask;
@@ -11,6 +13,8 @@ import com.github.standobyte.jojo.entity.stand.StandPose;
 import com.github.standobyte.jojo.entity.stand.StandStatFormulas;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.SoundCategory;
@@ -23,6 +27,14 @@ public class KraftWorkEnergyAccumulation extends StandEntityAction {
     public static final StandPose GIVE_ENERGY_POSE = new StandPose("KW_GIVE_ENERGY");
     public KraftWorkEnergyAccumulation(Builder builder) {
         super(builder);
+    }
+
+    @Override
+    protected ActionConditionResult checkSpecificConditions(LivingEntity user, IStandPower power, ActionTarget target) {
+        if (!(user instanceof PlayerEntity)) {
+            return ActionConditionResult.NEGATIVE;
+        }
+        return super.checkSpecificConditions(user, power, target);
     }
 
     @Override

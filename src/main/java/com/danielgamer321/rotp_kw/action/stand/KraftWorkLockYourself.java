@@ -31,6 +31,9 @@ public class KraftWorkLockYourself extends StandAction {
 
     @Override
     protected ActionConditionResult checkSpecificConditions(LivingEntity user, IStandPower power, ActionTarget target) {
+        if (!(user instanceof PlayerEntity)) {
+            return ActionConditionResult.NEGATIVE;
+        }
         ItemStack main = user.getItemBySlot(EquipmentSlotType.MAINHAND);
         ItemStack helmet = user.getItemBySlot(EquipmentSlotType.HEAD);
         ItemStack chestplace = user.getItemBySlot(EquipmentSlotType.CHEST);
