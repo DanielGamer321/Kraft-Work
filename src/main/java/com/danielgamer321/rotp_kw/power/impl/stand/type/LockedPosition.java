@@ -4,6 +4,7 @@ import com.danielgamer321.rotp_kw.init.InitEffects;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.monster.CreeperEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.EntityPredicates;
@@ -32,7 +33,7 @@ public class LockedPosition {
             if (user != null && user.isAlive()) {
                 List<LivingEntity> entities = world.getEntitiesOfClass(LivingEntity.class, aabb, EntityPredicates.NO_CREATIVE_OR_SPECTATOR);
                 for (LivingEntity target : entities) {
-                    if (target.isAlive() && !target.getUUID().equals(standUserId)) {
+                    if (target.isAlive() && !target.getUUID().equals(standUserId) && !(target instanceof CreeperEntity && ((CreeperEntity) target).getSwellDir() >= 1)) {
                         target.addEffect(new EffectInstance(InitEffects.LOCKED_POSITION.get(), 3, 0, false, false, true));
                     }
                 }

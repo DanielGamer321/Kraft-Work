@@ -22,6 +22,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.item.ArmorStandEntity;
+import net.minecraft.entity.monster.CreeperEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
@@ -71,6 +72,16 @@ public class GameplayEventHandler {
                 releaseFromLock(entity);
             }
         });
+        if (entity instanceof CreeperEntity && ((CreeperEntity) entity).getSwellDir() >= 1 && InitEffects.isLocked(entity)) {
+            entity.removeEffect(InitEffects.LOCKED_MAIN_HAND.get());
+            entity.removeEffect(InitEffects.LOCKED_OFF_HAND.get());
+            entity.removeEffect(InitEffects.LOCKED_HELMET.get());
+            entity.removeEffect(InitEffects.LOCKED_CHESTPLATE.get());
+            entity.removeEffect(InitEffects.LOCKED_LEGGINGS.get());
+            entity.removeEffect(InitEffects.LOCKED_POSITION.get());
+            entity.removeEffect(InitEffects.TRANSPORT_LOCKED.get());
+            entity.removeEffect(InitEffects.FULL_TRANSPORT_LOCKED.get());
+        }
     }
 
     @SubscribeEvent
