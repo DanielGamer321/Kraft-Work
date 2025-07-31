@@ -101,8 +101,10 @@ public class KraftWorkStandType<T extends StandStats> extends EntityStandType<T>
                         ProjectileEntity projectile = (ProjectileEntity) entity;
                         int kineticEnergy = entity.getCapability(ProjectileUtilCapProvider.CAPABILITY).map(cap -> cap.getKineticEnergy()).orElse(0);
                         int flightTicks = projectile.getCapability(ProjectileUtilCapProvider.CAPABILITY).map(cap -> cap.getFlightTicks()).orElse(0);
-                        Vector3d velocity = projectile.getDeltaMovement().normalize().add(world.random.nextGaussian() * (double)0.0075F * (double)0.0F, world.random.nextGaussian() * (double)0.0075F * (double)0.0F,
-                                world.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)Math.min((0.143F * kineticEnergy), 3.15F));
+                        Vector3d velocity = projectile instanceof FireworkRocketEntity ?
+                                projectile.getDeltaMovement().normalize().add(world.random.nextGaussian() * (double)0.0075F * (double)0.0F, world.random.nextGaussian() * (double)0.0075F * (double)0.0F, world.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)3.15F) :
+                                projectile.getDeltaMovement().normalize().add(world.random.nextGaussian() * (double)0.0075F * (double)0.0F, world.random.nextGaussian() * (double)0.0075F * (double)0.0F,
+                                        world.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)Math.min((0.143F * kineticEnergy), 3.15F));
                         if (positionLocking && distance <= 150) {
                             if (projectile.canUpdate()) {
                                 setCanUpdateServerSide(projectile, false);
