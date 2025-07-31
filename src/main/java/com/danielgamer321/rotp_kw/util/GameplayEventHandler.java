@@ -223,8 +223,10 @@ public class GameplayEventHandler {
                     else if (entity instanceof ProjectileEntity) {
                         ProjectileEntity projectile = (ProjectileEntity) entity;
                         int kineticEnergy = projectile.getCapability(ProjectileUtilCapProvider.CAPABILITY).map(cap -> cap.getKineticEnergy()).orElse(0);
-                        Vector3d velocity = projectile.getDeltaMovement().normalize().add(user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F,
-                                user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)Math.min((0.143F * kineticEnergy), 3.15F));
+                        Vector3d velocity = projectile instanceof FireworkRocketEntity ?
+                                projectile.getDeltaMovement().normalize().add(user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)3.15F) :
+                                projectile.getDeltaMovement().normalize().add(user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F, user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F,
+                                        user.level.random.nextGaussian() * (double)0.0075F * (double)0.0F).scale((double)Math.min((0.143F * kineticEnergy), 3.15F));
                         KraftWorkStandType.ReleaseProjectile(user, projectile, kineticEnergy, velocity);
                         projectile.setNoGravity(false);
                     }
