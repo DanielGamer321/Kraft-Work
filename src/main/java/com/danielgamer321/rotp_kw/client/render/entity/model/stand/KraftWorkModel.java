@@ -123,6 +123,23 @@ public class KraftWorkModel extends HumanoidStandModel<KraftWorkEntity> {
 						RotationAngle.fromDegrees(leftLowerLeg, 25F, 0, 0),
 						RotationAngle.fromDegrees(rightLeg, -5F, 0, 0),
 						RotationAngle.fromDegrees(rightLowerLeg, 10F, 0, 0)
+				},
+				new RotationAngle[] {
+						RotationAngle.fromDegrees(head, 10F, 0, 0),
+						RotationAngle.fromDegrees(body, 15F, 25F, 0),
+						RotationAngle.fromDegrees(upperPart, 0, 0, 0),
+						RotationAngle.fromDegrees(leftArm, 0, 20F, -5F),
+						RotationAngle.fromDegrees(leftArmJoint, 50F, 0, 0),
+						RotationAngle.fromDegrees(leftForeArm, -90F, 10F, -90F),
+						RotationAngle.fromDegrees(rightArm, -26.6466F, -6.7351F, 0.5728F),
+						RotationAngle.fromDegrees(rightArmJoint, 0, 0, 0),
+						RotationAngle.fromDegrees(rightForeArm, -90F, -57.5F, 90F),
+						RotationAngle.fromDegrees(leftLeg, -100F, -40F, 0),
+						RotationAngle.fromDegrees(leftLegJoint, 60F, 0, 0),
+						RotationAngle.fromDegrees(leftLowerLeg, 120F, 0, 0),
+						RotationAngle.fromDegrees(rightLeg, -100F, 40F, 0),
+						RotationAngle.fromDegrees(rightLegJoint, 60F, 0, 0),
+						RotationAngle.fromDegrees(rightLowerLeg, 120F, 0, 0)
 				}
 		};
 	}
@@ -260,12 +277,16 @@ public class KraftWorkModel extends HumanoidStandModel<KraftWorkEntity> {
 				RotationAngle.fromDegrees(upperPart, 0.0F, 0.0F, 0.0F),
 				RotationAngle.fromDegrees(torso, 0.0F, 0.0F, 0.0F),
 				RotationAngle.fromDegrees(leftArm, 0.0F, 1F, -5F),
+				RotationAngle.fromDegrees(leftArmJoint, 0.0F, 0.0F, 0.0F),
 				RotationAngle.fromDegrees(leftForeArm, -7.5F, 0.0F, 0.0F),
 				RotationAngle.fromDegrees(rightArm, 0.0F, -1F, 5F),
+				RotationAngle.fromDegrees(rightArmJoint, 0.0F, 0.0F, 0.0F),
 				RotationAngle.fromDegrees(rightForeArm, -7.5F, 0.0F, 0.0F),
 				RotationAngle.fromDegrees(leftLeg, -5F, 0.0F, -2.5F),
+				RotationAngle.fromDegrees(leftLegJoint, 0.0F, 0.0F, 0.0F),
 				RotationAngle.fromDegrees(leftLowerLeg, 10F, 0.0F, 2.5F),
 				RotationAngle.fromDegrees(rightLeg, -10F, 0.0F, 2.5F),
+				RotationAngle.fromDegrees(rightLegJoint, 0.0F, 0.0F, 0.0F),
 				RotationAngle.fromDegrees(rightLowerLeg, 20F, 0.0F, -2.5F)
 		});
 	}
@@ -274,8 +295,10 @@ public class KraftWorkModel extends HumanoidStandModel<KraftWorkEntity> {
 	protected ModelPose<KraftWorkEntity> initIdlePose2Loop() {
 		return new ModelPose<>(new RotationAngle[] {
 				RotationAngle.fromDegrees(leftArm, 0.0F, 1F, -4.5F),
+				RotationAngle.fromDegrees(leftArmJoint, 0.0F, 0.0F, 0.0F),
 				RotationAngle.fromDegrees(leftForeArm, -7F, 0.0F, 0.0F),
 				RotationAngle.fromDegrees(rightArm, 0.0F, -1F, 4.5F),
+				RotationAngle.fromDegrees(rightArmJoint, 0.0F, 0.0F, 0.0F),
 				RotationAngle.fromDegrees(rightForeArm, -7.5F, 0.0F, 0.0F)
 		});
 	}

@@ -3,6 +3,7 @@ package com.danielgamer321.rotp_kw.action.stand;
 import com.danielgamer321.rotp_kw.entity.damaging.projectile.KWItemEntity;
 import com.github.standobyte.jojo.action.ActionConditionResult;
 import com.github.standobyte.jojo.action.ActionTarget;
+import com.github.standobyte.jojo.action.player.ContinuousActionInstance;
 import com.github.standobyte.jojo.action.stand.StandAction;
 import com.github.standobyte.jojo.entity.damaging.projectile.MolotovEntity;
 import com.github.standobyte.jojo.entity.damaging.projectile.TommyGunBulletEntity;
@@ -588,6 +589,11 @@ public class KraftWorkPlaceProjectile extends StandAction {
         if (!(itemOwner instanceof PlayerEntity && ((PlayerEntity)itemOwner).abilities.instabuild)) {
             item.shrink(itemsToThrow);
         }
+    }
+
+    @Override
+    protected boolean canBeUsedDuringPlayerAction(ContinuousActionInstance<?, ?> curPlayerAction) {
+        return false;
     }
 
     @Override

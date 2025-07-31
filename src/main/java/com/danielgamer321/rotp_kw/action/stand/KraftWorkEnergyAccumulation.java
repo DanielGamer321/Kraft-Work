@@ -12,12 +12,13 @@ import com.github.standobyte.jojo.entity.stand.StandEntityTask;
 import com.github.standobyte.jojo.entity.stand.StandPose;
 import com.github.standobyte.jojo.entity.stand.StandStatFormulas;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
-
+import com.github.standobyte.jojo.util.general.MathUtil;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeMod;
 
@@ -47,13 +48,15 @@ public class KraftWorkEnergyAccumulation extends StandEntityAction {
 
     @Override
     public void standPerform(World world, StandEntity standEntity, IStandPower userPower, StandEntityTask task) {
-        world.getEntitiesOfClass(ProjectileEntity.class, standEntity.getBoundingBox().inflate(standEntity.getAttributeValue(ForgeMod.REACH_DISTANCE.get()))).forEach(projectile -> {
+        world.getEntitiesOfClass(ProjectileEntity.class, standEntity.getBoundingBox().inflate(standEntity.getAttributeValue(ForgeMod.REACH_DISTANCE.get())),
+                entity -> standEntity.getLookAngle().dot(entity.getDeltaMovement().reverse().normalize()) <= MathHelper.cos((float) (30.0 +
+                        MathHelper.clamp(standEntity.getPrecision(), 0, 16) * 30.0 / 16.0) * MathUtil.DEG_TO_RAD)).forEach(projectile -> {
             boolean PositionLocking = projectile.getCapability(EntityUtilCapProvider.CAPABILITY).map(cap -> cap.getPositionLocking()).orElse(false);
             if (PositionLocking) {
                 if (projectile instanceof AbstractArrowEntity && !(projectile instanceof KWItemEntity)) {
                     int kineticEnergy = projectile.getCapability(ProjectileUtilCapProvider.CAPABILITY).map(cap -> cap.getKineticEnergy()).orElse(0);
                     AbstractArrowEntity arrow = (AbstractArrowEntity) projectile;
-                    if (kineticEnergy > 200.D) {
+                    if (kineticEnergy > 200D) {
                         arrow.setCritArrow(true);
                     }
                 }

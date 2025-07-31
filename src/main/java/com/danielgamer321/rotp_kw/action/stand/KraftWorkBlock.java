@@ -12,18 +12,15 @@ import com.github.standobyte.jojo.entity.damaging.projectile.ownerbound.Satiporo
 import com.github.standobyte.jojo.entity.stand.StandEntity;
 import com.github.standobyte.jojo.entity.stand.StandEntityTask;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
-
+import com.github.standobyte.jojo.util.general.MathUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.BoatEntity;
-import net.minecraft.entity.item.EnderPearlEntity;
-import net.minecraft.entity.item.FallingBlockEntity;
-import net.minecraft.entity.item.ArmorStandEntity;
-import net.minecraft.entity.item.TNTEntity;
+import net.minecraft.entity.item.*;
 import net.minecraft.entity.item.minecart.AbstractMinecartEntity;
 import net.minecraft.entity.projectile.EyeOfEnderEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeMod;
 
@@ -43,7 +40,9 @@ public class KraftWorkBlock extends StandEntityBlock {
     public void standTickPerform(World world, StandEntity standEntity, IStandPower userPower, StandEntityTask task) {
         if (userPower.getResolveLevel() >= 2) {
             LivingEntity user = userPower.getUser();
-            world.getEntitiesOfClass(Entity.class, standEntity.getBoundingBox().inflate(standEntity.getAttributeValue(ForgeMod.REACH_DISTANCE.get()))).forEach(entity -> {
+            world.getEntitiesOfClass(Entity.class, standEntity.getBoundingBox().inflate(standEntity.getAttributeValue(ForgeMod.REACH_DISTANCE.get())),
+                    entity -> standEntity.getLookAngle().dot(entity.getDeltaMovement().reverse().normalize()) >= MathHelper.cos((float) (30.0 +
+                            MathHelper.clamp(standEntity.getPrecision(), 0, 16) * 30.0 / 16.0) * MathUtil.DEG_TO_RAD)).forEach(entity -> {
                 boolean PositionLocking = entity.getCapability(EntityUtilCapProvider.CAPABILITY).map(cap -> cap.getPositionLocking()).orElse(false);
                 if (!PositionLocking) {
                     if (entity instanceof BoatEntity || entity instanceof AbstractMinecartEntity ||

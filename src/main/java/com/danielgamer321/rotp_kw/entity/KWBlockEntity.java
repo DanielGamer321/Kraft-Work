@@ -19,6 +19,7 @@ import net.minecraftforge.fml.network.NetworkHooks;
 import javax.annotation.Nullable;
 
 public class KWBlockEntity extends Entity {
+    private boolean timeStop = false;
     private LockedPosition lockedPosition;
 
     public KWBlockEntity(World world, BlockPos blockPos) {
@@ -56,11 +57,20 @@ public class KWBlockEntity extends Entity {
     }
 
     @Override
+    public void canUpdate(boolean canUpdate) {
+        this.timeStop = !canUpdate;
+        if (canUpdate) {
+            super.canUpdate(canUpdate);
+        }
+    }
+
+    @Override
     protected void defineSynchedData() {
     }
 
     @Override
     protected void readAdditionalSaveData(CompoundNBT nbt) {
+        timeStop = nbt.getBoolean("TimeStop");
         if (nbt.contains("LockedPosition", 10)) {
             this.lockedPosition = LockedPosition.fromNBT(nbt.getCompound("LockedPosition"));
         }
@@ -68,6 +78,7 @@ public class KWBlockEntity extends Entity {
 
     @Override
     protected void addAdditionalSaveData(CompoundNBT nbt) {
+        nbt.putBoolean("TimeStop", timeStop);
         if (lockedPosition != null) {
             nbt.put("LockedPosition", lockedPosition.toNBT());
         }

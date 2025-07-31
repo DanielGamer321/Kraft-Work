@@ -6,6 +6,7 @@ import com.danielgamer321.rotp_kw.init.InitEffects;
 import com.danielgamer321.rotp_kw.power.impl.stand.type.KraftWorkStandType;
 import com.github.standobyte.jojo.action.ActionConditionResult;
 import com.github.standobyte.jojo.action.ActionTarget;
+import com.github.standobyte.jojo.action.player.ContinuousActionInstance;
 import com.github.standobyte.jojo.action.stand.StandAction;
 import com.github.standobyte.jojo.client.InputHandler;
 import com.github.standobyte.jojo.entity.RoadRollerEntity;
@@ -87,8 +88,6 @@ public class KraftWorkLockTarget extends StandAction {
             break;
         case EMPTY:
             return ActionConditionResult.NEGATIVE;
-        default:
-            break;
         }
         return super.checkSpecificConditions(user, power, target);
     }
@@ -224,6 +223,11 @@ public class KraftWorkLockTarget extends StandAction {
     @Override
     public boolean cancelHeldOnGettingAttacked(IStandPower power, DamageSource dmgSource, float dmgAmount) {
         return true;
+    }
+
+    @Override
+    protected boolean canBeUsedDuringPlayerAction(ContinuousActionInstance<?, ?> curPlayerAction) {
+        return false;
     }
 
     @Override
